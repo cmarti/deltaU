@@ -4,7 +4,6 @@ import pandas as pd
 from collections import defaultdict
 from itertools import combinations
 
-from gpmap.linop import calc_vjs_variance_components
 from gpmap.summary import GPmapSummarizer
 
 import matplotlib.pyplot as plt

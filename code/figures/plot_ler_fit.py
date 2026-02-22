@@ -12,7 +12,8 @@ if __name__ == "__main__":
     nodes_df = pd.read_csv(
         "results/intron.corrs.csv", dtype={"seq": str}, index_col="seq"
     )
-    space = SequenceSpace(X=nodes_df.index.values, y=nodes_df["corr"].values)
+    print(nodes_df)
+    space = SequenceSpace(X=nodes_df.index.values, y=nodes_df["emp_cor"].values)
     edges_df = space.get_edges_df()
     m = pd.read_csv("results/intron.interaction_strength.csv", index_col=0)
     pred = pd.read_csv("results/intron.ler.landscape.csv", index_col=0)
@@ -24,23 +25,23 @@ if __name__ == "__main__":
 
     axes = subplots[0]
     axes.scatter(
-        nodes_df["dj"], nodes_df["corr"], color="black", s=10, alpha=0.5, lw=0
+        nodes_df["d_jittered"], nodes_df["emp_cor"], color="black", s=10, alpha=0.5, lw=0
     )
     mplot.plot_edges(
-        axes, nodes_df, edges_df, x="d", y="corr", alpha=0.1, color="black"
+        axes, nodes_df, edges_df, x="d_jittered", y="emp_cor", alpha=0.1, color="black"
     )
     axes.axhline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
     axes.set(
         xlabel="Hamming distance",
-        ylabel="Empirical residual correlation",
+        ylabel="Empirical correlation",
         xticks=np.arange(9),
     )
 
     axes = subplots[1]
     axes.scatter(
-        nodes_df["pred"], nodes_df["corr"], color="black", s=5, alpha=0.5, lw=0
+        nodes_df["pred_cor"], nodes_df["emp_cor"], color="black", s=5, alpha=0.5, lw=0
     )
-    r2 = pearsonr(nodes_df["pred"], nodes_df["corr"])[0] ** 2
+    r2 = pearsonr(nodes_df["pred_cor"], nodes_df["emp_cor"])[0] ** 2
     axes.text(
         0.05,
         0.95,
@@ -50,8 +51,8 @@ if __name__ == "__main__":
         va="top",
     )
     axes.set(
-        xlabel="Predicted residual correlation",  # yticklabels=[],
-        ylabel="Empirical residual correlation",
+        xlabel="Predicted correlation",  # yticklabels=[],
+        ylabel="Empirical correlation",
     )
     axes.axline(
         (0, 0), slope=1, color="grey", linestyle="--", lw=0.75, alpha=0.5
@@ -60,7 +61,7 @@ if __name__ == "__main__":
     axes.axvline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
 
     axes = subplots[2]
-    im = axes.imshow(np.log(m), cmap="binary")
+    im = axes.imshow(m, cmap="binary")
     labels = m.columns
     axes.set(
         xlabel="Site 1",
