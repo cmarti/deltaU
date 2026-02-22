@@ -15,9 +15,9 @@ if __name__ == "__main__":
     space = SequenceSpace(X=nodes_df.index.values, y=nodes_df["corr"].values)
     edges_df = space.get_edges_df()
     m = pd.read_csv("results/intron.interaction_strength.csv", index_col=0)
-    pred = pd.read_csv("results/intron.ler.landscape.csv", index_col=0)
-    test = pd.read_csv("data/processed/intron.test.csv", index_col=0)
-    test = test.join(pred)
+    # pred = pd.read_csv("results/intron.ler.landscape.csv", index_col=0)
+    # test = pd.read_csv("data/processed/intron.test.csv", index_col=0)
+    # test = test.join(pred)
 
     fig, subplots = plt.subplots(2, 2, figsize=(7, 6))
     subplots = subplots.flatten()
@@ -32,7 +32,7 @@ if __name__ == "__main__":
     axes.axhline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
     axes.set(
         xlabel="Hamming distance",
-        ylabel="Empirical residual correlation",
+        ylabel="Empirical correlation",
         xticks=np.arange(9),
     )
 
@@ -50,8 +50,8 @@ if __name__ == "__main__":
         va="top",
     )
     axes.set(
-        xlabel="Predicted residual correlation",  # yticklabels=[],
-        ylabel="Empirical residual correlation",
+        xlabel="Predicted correlation",  # yticklabels=[],
+        ylabel="Empirical correlation",
     )
     axes.axline(
         (0, 0), slope=1, color="grey", linestyle="--", lw=0.75, alpha=0.5
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     axes.axvline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
 
     axes = subplots[2]
-    im = axes.imshow(np.log(m), cmap="binary")
+    im = axes.imshow(m, cmap="binary")
     labels = m.columns
     axes.set(
         xlabel="Site 1",
@@ -78,29 +78,29 @@ if __name__ == "__main__":
         label="Interaction strength ($1/a_{ij}$)",
     )
 
-    axes = subplots[3]
-    axes.scatter(test["f"], test["30C_y"], s=5, lw=0, c="black", alpha=0.5)
-    r2 = pearsonr(test["f"], test["30C_y"])[0] ** 2
-    axes.text(
-        0.05,
-        0.95,
-        r"$R^2$" + f"={r2:.2f}",
-        transform=axes.transAxes,
-        ha="left",
-        va="top",
-    )
-    lims = (-9, 2)
-    axes.set(
-        xlabel="Predicted fitness",
-        ylabel="Measured fitness",
-        xlim=lims,
-        ylim=lims,
-    )
-    axes.axline(
-        (0, 0), slope=1, color="grey", linestyle="--", lw=0.75, alpha=0.5
-    )
-    axes.axhline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
-    axes.axvline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
+    # axes = subplots[3]
+    # axes.scatter(test["f"], test["30C_y"], s=5, lw=0, c="black", alpha=0.5)
+    # r2 = pearsonr(test["f"], test["30C_y"])[0] ** 2
+    # axes.text(
+    #     0.05,
+    #     0.95,
+    #     r"$R^2$" + f"={r2:.2f}",
+    #     transform=axes.transAxes,
+    #     ha="left",
+    #     va="top",
+    # )
+    # lims = (-9, 2)
+    # axes.set(
+    #     xlabel="Predicted fitness",
+    #     ylabel="Measured fitness",
+    #     xlim=lims,
+    #     ylim=lims,
+    # )
+    # axes.axline(
+    #     (0, 0), slope=1, color="grey", linestyle="--", lw=0.75, alpha=0.5
+    # )
+    # axes.axhline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
+    # axes.axvline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
 
     fig.tight_layout()
     fig.savefig("figures/intron.ler.fit.png", dpi=300)
