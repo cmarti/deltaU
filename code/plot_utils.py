@@ -43,6 +43,8 @@ POSITION_LABELS = {
     "intron": [2, 3, 4, 5, 18, 19, 20, 21],
     "intron.30C": [2, 3, 4, 5, 18, 19, 20, 21],
     "intron.37C": [2, 3, 4, 5, 18, 19, 20, 21],
+    "gb1": [39, 40, 41, 54],
+    "fyn-sh3": [3, 17, 19, 25, 27, 49, 54],
 }
 
 
@@ -353,12 +355,27 @@ def calc_edges_df(seqs):
     return(edges_df)
 
 
-def plot_local_landscape(means, seqs, axes, pos1="$_{2}$", pos2="$_{21}$"):
+def plot_local_landscape(contrasts, seqs, axes, pos1="$_{2}$", pos2="$_{21}$"):
     edges_df = calc_edges_df(seqs)
     nodes_df = pd.DataFrame({
         "x": [calc_hamming_distance(s, seqs[0]) for s in seqs], 
-        "f": means.loc[seqs]},
+        "f": contrasts['estimate'].values,
+        'err': 2 * contrasts['std'].values},
         index=seqs)
+    
+    axes.errorbar(
+        nodes_df['x'],
+        nodes_df['f'],
+        yerr=nodes_df['err'],
+        fmt='none',
+        markersize=0.5,
+        color='black',
+        lw=0,
+        ecolor='black',
+        elinewidth=0.5,
+        capsize=1,
+        capthick=0.5,
+    )
 
     mplot.plot_visualization(
         axes,
@@ -367,7 +384,7 @@ def plot_local_landscape(means, seqs, axes, pos1="$_{2}$", pos2="$_{21}$"):
         y="f",
         edges_df=edges_df,
         nodes_color="black",
-        nodes_size=10,
+        nodes_size=0,
         edges_alpha=1,
         edges_width=0.75,
         edges_color="lightgrey",

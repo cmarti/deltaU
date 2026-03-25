@@ -1,14 +1,13 @@
 import numpy as np
 import pandas as pd
-
-from scipy.stats import pearsonr
 from gpmap.datasets import DataSet
 from gpmap.inference import (
-    MinimumEpistasisInterpolator,
     ConnectednessModelRegression,
-    VCregression,
     LocalEpistasisRegression,
+    MinimumEpistasisInterpolator,
+    VCregression,
 )
+from scipy.stats import pearsonr
 
 if __name__ == "__main__":
     dataset_name = "dmsc"
@@ -17,7 +16,7 @@ if __name__ == "__main__":
     print("Loading data")
     data = DataSet(dataset_name).data
     X, y, y_var = data.index.values, data.y.values, data.y_var.values
-    
+
     # # Normalize measurments to SD=1
     # std = y.std()
     # y = y / std
@@ -36,7 +35,7 @@ if __name__ == "__main__":
             seq_length=seq_length, alphabet_type="rna", P=2
         ),
     }
-    
+
     # print('Fitting models')
     # for label, model in models.items():
     #     print(f"  Fitting {label} model")
@@ -47,15 +46,21 @@ if __name__ == "__main__":
     for p in np.geomspace(0.01, 0.99, 10):
         n_train = int(p * data.shape[0])
         for i in range(3):
-            print(f"  Randomly splitting training/test: iter {i+1} for p={p}")
-            
+            print(
+                f"  Randomly splitting training/test: iter {i + 1} for p={p}"
+            )
+
             # Split train/test sets
             u = np.random.uniform(size=data.shape[0])
             q = np.percentile(u, q=p * 100)
             train_idx = u < q
             test_idx = ~train_idx
 
-            X_train, y_train, y_var_train = X[train_idx], y[train_idx], y_var[train_idx]
+            X_train, y_train, y_var_train = (
+                X[train_idx],
+                y[train_idx],
+                y_var[train_idx],
+            )
             X_test, y_test = X[test_idx], y[test_idx]
 
             # Make predictions using the VC regression model

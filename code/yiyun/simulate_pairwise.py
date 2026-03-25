@@ -23,6 +23,7 @@ if __name__ == "__main__":
     f_pw = P @ f
     s = GPmapSummarizer(alpha, l, f_pw)
     vc = s.calc_V_k_variance_components()
+    print(vc)
 
     logp = f_pw - logsumexp(f_pw)
     p = np.exp(logp)

@@ -14,7 +14,7 @@ if __name__ == "__main__":
         "data/processed/yiyun_simulated_landscape.csv", index_col=0
     )
     f = data["logp"].values
-    windows = [set(range(i, i + 4)) for i in range(6)]
+    windows = [set(range(i, i + 4)) for i in range(l- 4 + 1)]
 
     windows_data = {
         tuple(w): defaultdict(lambda: np.zeros(a**l)) for w in windows
