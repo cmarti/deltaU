@@ -82,6 +82,6 @@ if __name__ == "__main__":
     fig.tight_layout()
     fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.95)
     add_panel_labels(subplots, ["A", "B", "C", "D", "E", "F"], x_offset=-0.22)
-    fig.savefig("figures/protein_datasets_figure.png", dpi=300)
-    fig.savefig("figures/protein_datasets_figure.svg", dpi=300)
+    fig.savefig("figures/figureS1.png", dpi=300)
+    fig.savefig("figures/figureS1.svg", dpi=300)
     print("Done.")

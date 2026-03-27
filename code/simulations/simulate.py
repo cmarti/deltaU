@@ -1,9 +1,7 @@
+
 import numpy as np
 import pandas as pd
-
-from itertools import combinations
 from gpmap.inference import LocalEpistasisRegression
-
 
 if __name__ == "__main__":
     np.random.seed(0)

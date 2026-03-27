@@ -5,7 +5,7 @@ from gpmap.inference import LocalEpistasisRegression
 
 
 if __name__ == "__main__":
-    dataset_label = "intron.37C"
+    dataset_label = "intron.30C"
 
     print(f"Fitting Local Epistasis Regression model to {dataset_label} data")
     position_labels = np.array([2, 3, 4, 5, 18, 19, 20, 21])

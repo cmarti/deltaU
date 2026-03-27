@@ -3,7 +3,7 @@ import pandas as pd
 from gpmap.inference import LocalEpistasisRegression
 
 if __name__ == "__main__":
-    for dataset_name in ["gb1", "fyn-sh3"]:
+    for dataset_name in ["smn1", "dmsc", "gb1", "fyn-sh3"]:
         print(f"Loading data for {dataset_name}...")
         data = pd.read_csv(
             f"data/processed/{dataset_name}.train.csv", index_col=0

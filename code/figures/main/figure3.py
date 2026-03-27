@@ -1,40 +1,15 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-
 from code.plot_utils import (
+    FIG_WIDTH,
+    POSITION_LABELS,
+    add_panel_labels,
+    apply_plot_style,
     plot_correlation_landscape,
     plot_interaction_matrix,
     plot_pred_vs_obs_corr,
-    apply_plot_style,
-    add_panel_labels,
-    FIG_WIDTH,
-    MODELS_PALETTE,
-    LINEPLOT_KWARGS,
 )
 
-
-def plot_cv_r2_curves(r2, axes):
-    for model, color in MODELS_PALETTE.items():
-        df = r2.loc[r2["model"] == model, :]
-        sns.lineplot(
-            x="p",
-            y="r2_test",
-            data=df,
-            label=model,
-            ax=axes,
-            color=color,
-            **LINEPLOT_KWARGS,
-        )
-    axes.set(
-        xlabel="Proportion of training data",
-        ylabel=r"Test $R^2$",
-        xlim=(0, 1),
-        ylim=(0, 1),
-    )
-    axes.legend(loc=4)
-
+import matplotlib.pyplot as plt
+import pandas as pd
 
 if __name__ == "__main__":
     dataset_names = ["smn1", "dmsc"]
@@ -54,7 +29,6 @@ if __name__ == "__main__":
         inferred_corr = pd.read_csv(
             f"results/{dataset_name}.corrs.csv", dtype={"seq": str}
         ).set_index("seq")
-        print(inferred_corr.loc[inferred_corr['d'] == 1,:])
         # r2 = pd.read_csv(f"results/{dataset_name}.r2.csv")
 
         print("  Plotting empirical correlation landscape...")
@@ -82,6 +56,6 @@ if __name__ == "__main__":
     fig.tight_layout()
     fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.95)
     add_panel_labels(subplots, ["A", "B", "C", "D", "E", "F"], x_offset=-0.22)
-    fig.savefig("figures/datasets_figure.png", dpi=300)
-    fig.savefig("figures/datasets_figure.svg", dpi=300)
+    fig.savefig("figures/figure3.png", dpi=300)
+    fig.savefig("figures/figure3.svg", dpi=300)
     print("Done.")

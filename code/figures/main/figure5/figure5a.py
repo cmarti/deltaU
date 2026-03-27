@@ -87,6 +87,7 @@ if __name__ == "__main__":
 
     print("  Saving figure...")
     fig.tight_layout()
-    fig.savefig(f"figures/{dataset_name}.ler.visualization.png", dpi=300)
-    fig.savefig(f"figures/{dataset_name}.ler.visualization.svg", dpi=300)
+    fname = "figures/figure5a"
+    fig.savefig(f"{fname}.png", dpi=300)
+    fig.savefig(f"{fname}.svg", dpi=300)
     print("Done.")

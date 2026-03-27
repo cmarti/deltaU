@@ -1,18 +1,9 @@
-import pandas as pd
+
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
-
-from itertools import product
-from scipy.linalg import block_diag
-from scipy.stats import pearsonr
-from tqdm import tqdm
-import statsmodels.api as sm
-
+import pandas as pd
 from pydeseq2.dds import DeseqDataSet
 from pydeseq2.default_inference import DefaultInference
 from pydeseq2.ds import DeseqStats
-from pydeseq2.utils import load_example_data
 
 if __name__ == "__main__":
     np.random.seed(0)
@@ -33,7 +24,7 @@ if __name__ == "__main__":
     dds = DeseqDataSet(
         counts=counts.T,
         metadata=metadata,
-        design="~group",
+        design_factors="group",
         refit_cooks=True,
         inference=inference,
     )
@@ -48,7 +39,7 @@ if __name__ == "__main__":
 
     print("Computing contrasts")
     for temp in [30, 37]:
-        print("  For temperature: {}C".format(temp))
+        print(f"  For temperature: {temp}C")
         ds = DeseqStats(
             dds,
             contrast=["group", f"Kan+{temp}C", f"Kan-{temp}C"],

@@ -8,7 +8,6 @@ from code.plot_utils import (
 )
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
 
@@ -35,48 +34,6 @@ def plot_prior_vs_inferred_corr(corr, inferred_corr, axes):
     axes.set(
         xlabel="Predicted correlation",  # yticklabels=[],
         ylabel="True prior correlation",
-    )
-    axes.axline(
-        (0, 0), slope=1, color="grey", linestyle="--", lw=0.75, alpha=0.5
-    )
-    axes.axhline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
-    axes.axvline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
-
-
-def plot_inferred_vs_true_test(test, axes):
-    # axes.scatter(test["fpred"], test["f"], s=5, lw=0, c="black", alpha=0.5,
-    #              rasterized=True)
-    bins = np.linspace(-7.5, 7.5, 51)
-    h, xedges, yedges = np.histogram2d(
-        test["fpred"].values,
-        test["f"].values,
-        bins=bins,
-    )
-    im = axes.imshow(
-        h.T,
-        origin="lower",
-        extent=[xedges[0], xedges[-1], yedges[0], yedges[-1]],
-        aspect="auto",
-        cmap="binary",
-    )
-    plt.colorbar(im, ax=axes, fraction=0.046, pad=0.04, label="# sequences")
-
-    r2 = pearsonr(test["fpred"], test["f"])[0] ** 2
-    axes.text(
-        0.05,
-        0.95,
-        r"$R^2$" + f"={r2:.2f}",
-        transform=axes.transAxes,
-        ha="left",
-        va="top",
-        fontsize=8,
-    )
-    axes.set(
-        xlabel="Test predicted fitness",
-        ylabel="Test true fitness",
-        xlim=(-7.5, 7.5),
-        ylim=(-7.5, 7.5),
-        aspect="equal",
     )
     axes.axline(
         (0, 0), slope=1, color="grey", linestyle="--", lw=0.75, alpha=0.5
@@ -123,6 +80,6 @@ if __name__ == "__main__":
     fig.tight_layout()
     fig.subplots_adjust(left=0.10, right=0.98, top=0.98, bottom=0.10)
     add_panel_labels(subplots, ["A", "B", "C", "D"], x_offset=-0.22)
-    fig.savefig("figures/simulations_figure.png", dpi=300)
-    fig.savefig("figures/simulations_figure.svg", dpi=300)
+    fig.savefig("figures/figure2.png", dpi=300)
+    fig.savefig("figures/figure2.svg", dpi=300)
     print("Done.")

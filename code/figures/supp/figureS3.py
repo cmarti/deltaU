@@ -140,12 +140,7 @@ if __name__ == "__main__":
 
     print("  Saving figure...")
     fig.tight_layout()
-    fig.savefig(
-        f"figures/{dataset_name}.ler.visualization_allelic_effects.png",
-        dpi=300,
-    )
-    fig.savefig(
-        f"figures/{dataset_name}.ler.visualization_allelic_effects.svg",
-        dpi=300,
-    )
+    fname = "figures/figureS3"
+    fig.savefig(f"{fname}.png", dpi=300)
+    fig.savefig(f"{fname}.svg", dpi=300)
     print("Done.")

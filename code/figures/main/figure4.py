@@ -1,22 +1,20 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-
 from code.plot_utils import (
+    FIG_WIDTH,
+    POSITION_LABELS,
+    add_panel_labels,
+    apply_plot_style,
     plot_correlation_landscape,
     plot_interaction_matrix,
     plot_pred_vs_obs_corr,
-    plot_cv_r2_curves,
-    plot_train_pred_comparison,
-    plot_sites_variance_components,
     plot_site_pairs_variance_components,
+    plot_sites_variance_components,
     plot_test_pred_comparison,
-    apply_plot_style,
-    add_panel_labels,
-    FIG_WIDTH,
-    POSITION_LABELS,
+    plot_train_pred_comparison,
 )
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
@@ -51,7 +49,6 @@ if __name__ == "__main__":
     coverage = np.mean((pred['y'] > pred['ci_95_lower']) & (pred['y'] < pred['ci_95_upper']))
     print(f'    Total test sequences: {pred.shape[0]}')
     print(f'    Coverage of 95% CI: {coverage*100:.2f}')
-    # exit()
     
     print('  Loading R2 curves data')
     r2 = pd.read_csv(f"results/{dataset_name}.r2.csv", index_col=0)
@@ -115,7 +112,7 @@ if __name__ == "__main__":
     fig.tight_layout()
     fig.subplots_adjust(wspace=0.8)
     add_panel_labels(subplots.flatten(), labels=['A', 'B', 'C', 'D','E', 'F', 'G', 'H'], x_offset=-0.32, y_offset=1.075)
-    fig.savefig(f"figures/{dataset_name}.ler.fit.png", dpi=300)
-    fig.savefig(f"figures/{dataset_name}.ler.fit.svg", dpi=300)
+    fig.savefig("figures/figure4.png", dpi=300)
+    fig.savefig("figures/figure4.svg", dpi=300)
 
     print("Done.")

@@ -119,7 +119,9 @@ if __name__ == "__main__":
     fig.supxlabel("Genotype at positions 19 and 20", fontsize=7, x=0.6, y=0.08)
     fig.supylabel("Average fitness", fontsize=7, y=0.55, x=0.1)
     fig.tight_layout(w_pad=0.5, h_pad=0.5)
-    fig.savefig(f"figures/{dataset_name}.local_landscapes.2-19-20-21.png", dpi=300)
-    fig.savefig(f"figures/{dataset_name}.local_landscapes.2-19-20-21.svg", dpi=300)
+    
+    fname = "figures/figure5bch"
+    fig.savefig(f"{fname}.png", dpi=300)
+    fig.savefig(f"{fname}.svg", dpi=300)
     
     print("Done.")
