@@ -13,6 +13,7 @@ from scipy.stats import pearsonr
 ######################
 # Plotting constants #
 ######################
+DATASETS = ["smn1", "dmsc", "gb1", 'fyn-sh3']
 FIG_WIDTH = 7.5
 STYLE_PATH = "style.sty"
 LINEPLOT_LW = 1
