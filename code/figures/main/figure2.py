@@ -53,7 +53,7 @@ if __name__ == "__main__":
     inferred_corr = pd.read_csv(
         "results/simulations.corrs.csv", dtype={"seq": str}
     ).set_index("seq")
-    r2 = pd.read_csv("results/simulations.r2.csv")
+    r2 = pd.read_csv("results/simulations.r2.csv", index_col=0)
 
     print("Making figure...")
     fig, subplots = plt.subplots(
@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
     print("  Plotting R2 vs training set size for model comparison...")
     axes = subplots[1, 1]
-    plot_cv_r2_curves(axes, r2)
+    plot_cv_r2_curves(r2, axes)
 
     print("  Saving figure...")
     fig.tight_layout()

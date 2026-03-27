@@ -1,15 +1,14 @@
 #!/usr/bin/env python
+from itertools import combinations
+
+import gpmap.plot.mpl as mplot
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.cm as cm
-import gpmap.plot.mpl as mplot
-
-from itertools import combinations
-from scipy.stats import pearsonr
 from gpmap.space import SequenceSpace
-
+from matplotlib import cm
+from scipy.stats import pearsonr
 
 ######################
 # Plotting constants #
@@ -26,7 +25,8 @@ LINEPLOT_KWARGS = {
         "lw": LINEPLOT_LW,
         "elinewidth": 0.5,
     },
-    "errorbar": "sd",
+    # "errorbar": "sd",
+    "ci": "sd",
 }
 
 GREYS = cm.get_cmap("binary")
@@ -323,7 +323,7 @@ def arrange_axis(
     axes.text(
         1.02,
         xpos,
-        "Diffusion axis {}".format(x),
+        f"Diffusion axis {x}",
         transform=axes.transAxes,
         fontsize=fontsize,
         ha="right",
@@ -332,7 +332,7 @@ def arrange_axis(
     axes.text(
         ypos,
         1.01,
-        "Diffusion axis {}".format(y),
+        f"Diffusion axis {y}",
         transform=axes.transAxes,
         fontsize=fontsize,
         ha="left",
