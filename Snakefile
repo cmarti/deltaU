@@ -1,7 +1,6 @@
 shell.prefix("source activate.sh ; source $(conda info --base)/etc/profile.d/conda.sh ; conda activate deltaU ; ")
 
-INTRON_MFS = [0, 0.4, 0.8, 1.2, 1.6, 1.8]
-INTRON_MF_SOURCE = 1.9
+INTRON_MFS = [0, 0.4, 0.8, 1.2, 1.6, 2]
 
 rule figure2:
     input:
@@ -246,35 +245,15 @@ rule intron_calc_variance_components:
     shell:
         "python code/intron/calc_variance_components.py"
 
-rule intron_calc_visualization_source:
+rule intron_calc_visualization:
     input:
         "results/intron.30C.ler.landscape.csv",
     output:
         "results/intron.30C.edges.npz",
-        "results/intron.30C.ler.map.mf_1.9.nodes.pq",
-        "results/intron.30C.ler.map.mf_1.9.decay_rates.csv",
-    shell:
-        "python code/intron/calc_visualization.py"
-
-rule intron_calc_visualization:
-    input:
-        "results/intron.30C.edges.npz",
-        "results/intron.30C.ler.map.mf_1.9.nodes.pq",
-        "results/intron.30C.ler.map.mf_1.9.decay_rates.csv",
-    output:
         expand("results/intron.30C.ler.map.mf_{mf}.nodes.pq", mf=INTRON_MFS),
         expand("results/intron.30C.ler.map.mf_{mf}.decay_rates.csv", mf=INTRON_MFS),
-    run:
-        import shutil
-        for mf in INTRON_MFS:
-            shutil.copyfile(
-                "results/intron.30C.ler.map.mf_1.9.nodes.pq",
-                f"results/intron.30C.ler.map.mf_{mf}.nodes.pq",
-            )
-            shutil.copyfile(
-                "results/intron.30C.ler.map.mf_1.9.decay_rates.csv",
-                f"results/intron.30C.ler.map.mf_{mf}.decay_rates.csv",
-            )
+    shell:
+        "python code/intron/calc_visualization.py"
 
 rule intron_calc_epistatic_coefficients:
     input:
@@ -294,13 +273,12 @@ rule intron_calc_r2_curves:
 
 rule plot_figure4:
     input:
+        "data/processed/intron.30C.train.csv",
+        "data/processed/intron.30C.test.csv",
         "results/intron.30C.corrs.csv",
         "results/intron.30C.interaction_strength.csv",
         "results/intron.30C.ler.landscape.csv",
-        "data/processed/intron.30C.train.csv",
         "results/intron.30C.ler.pred.csv",
-        "data/processed/intron.30C.test.csv",
-        "results/intron.30C.r2.csv",
         "results/intron.30C.ler.sites_variance_k.csv",
         "results/intron.30C.ler.sites_pairs_variance.csv",
     output:
