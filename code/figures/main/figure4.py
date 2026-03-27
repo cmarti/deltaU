@@ -50,9 +50,9 @@ if __name__ == "__main__":
     print(f'    Total test sequences: {pred.shape[0]}')
     print(f'    Coverage of 95% CI: {coverage*100:.2f}')
     
-    print('  Loading R2 curves data')
-    r2 = pd.read_csv(f"results/{dataset_name}.r2.csv", index_col=0)
-    print(r2)
+    # print('  Loading R2 curves data')
+    # r2 = pd.read_csv(f"results/{dataset_name}.r2.csv", index_col=0)
+    # print(r2)
     
     print("  Loading variance explained by interactions of order k for site i")
     fpath = f'results/{dataset_name}.ler.sites_variance_k.csv'

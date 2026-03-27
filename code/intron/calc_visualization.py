@@ -17,7 +17,7 @@ if __name__ == "__main__":
     rw = WMWalk(space)
     space.write_edges(f"results/{dataset_label}.edges.npz")
     
-    for mean_function in [1.9]:# [0, 0.4, 0.8, 1.2, 1.6, 2]:
+    for mean_function in [0, 0.4, 0.8, 1.2, 1.6, 2]:
         print("    Stationary mean function of {}".format(mean_function))
         rw.calc_visualization(mean_function=mean_function, n_components=20)
         rw.write_tables(
