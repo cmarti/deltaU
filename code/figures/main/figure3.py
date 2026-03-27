@@ -3,13 +3,12 @@ from code.plot_utils import (
     POSITION_LABELS,
     add_panel_labels,
     apply_plot_style,
-    plot_correlation_landscape,
-    plot_interaction_matrix,
     plot_pred_vs_obs_corr,
 )
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from gpmap.plot.mpl import plot_correlation_U_sites, plot_interaction_matrix
 
 if __name__ == "__main__":
     dataset_names = ["smn1", "dmsc"]
@@ -33,7 +32,7 @@ if __name__ == "__main__":
 
         print("  Plotting empirical correlation landscape...")
         axes = ax_row[0]
-        plot_correlation_landscape(inferred_corr, axes, y="emp_cor")
+        plot_correlation_U_sites(inferred_corr, axes, y="emp_cor")
         axes.set(ylabel="Observed correlation")
         
         print("  Plotting prior vs inferred correlation landscape...")

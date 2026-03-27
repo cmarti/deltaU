@@ -12,7 +12,7 @@ from gpmap.inference import (
 from scipy.stats import pearsonr
 
 if __name__ == "__main__":
-    for dataset_name in ['intron.30C'] + DATASETS:
+    for dataset_name in DATASETS[::-1]:
         np.random.seed(0)
         print(f"Calculating r2 curves for {dataset_name} dataset...")
         

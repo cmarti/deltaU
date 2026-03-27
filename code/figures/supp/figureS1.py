@@ -5,14 +5,13 @@ from code.plot_utils import (
     POSITION_LABELS,
     add_panel_labels,
     apply_plot_style,
-    plot_correlation_landscape,
-    plot_interaction_matrix,
     plot_pred_vs_obs_corr,
 )
 
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from gpmap.plot.mpl import plot_correlation_U_sites, plot_interaction_matrix
 
 
 def plot_cv_r2_curves(r2, axes):
@@ -54,12 +53,11 @@ if __name__ == "__main__":
         inferred_corr = pd.read_csv(
             f"results/{dataset_name}.corrs.csv", dtype={"seq": str}
         ).set_index("seq")
-        print(inferred_corr)
         # r2 = pd.read_csv(f"results/{dataset_name}.r2.csv")
 
         print("  Plotting empirical correlation landscape...")
         axes = ax_row[0]
-        plot_correlation_landscape(inferred_corr, axes, y="emp_cor")
+        plot_correlation_U_sites(inferred_corr, axes, y="emp_cor")
         axes.set(ylabel="Observed correlation")
         
         print("  Plotting prior vs inferred correlation landscape...")

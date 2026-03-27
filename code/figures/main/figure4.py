@@ -3,11 +3,7 @@ from code.plot_utils import (
     POSITION_LABELS,
     add_panel_labels,
     apply_plot_style,
-    plot_correlation_landscape,
-    plot_interaction_matrix,
     plot_pred_vs_obs_corr,
-    plot_site_pairs_variance_components,
-    plot_sites_variance_components,
     plot_test_pred_comparison,
     plot_train_pred_comparison,
 )
@@ -15,6 +11,12 @@ from code.plot_utils import (
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from gpmap.plot.mpl import (
+    plot_correlation_U_sites,
+    plot_interaction_matrix,
+    plot_site_pairs_variance_components,
+    plot_sites_variance_components,
+)
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
@@ -70,7 +72,7 @@ if __name__ == "__main__":
 
     print("  Plotting correlation landscape...")
     axes = subplots[0, 1]
-    plot_correlation_landscape(nodes_df, axes, y="emp_cor")
+    plot_correlation_U_sites(nodes_df, axes, y="emp_cor")
     axes.set(ylabel="Observed correlation")
 
     print("  Plotting predicted vs observed correlations...")
@@ -105,7 +107,6 @@ if __name__ == "__main__":
     
     print("  Plotting variance explained by interactions of order k=2 and k>2 for pairs of sites")
     axes = subplots[1, 3]
-    print(m)
     plot_site_pairs_variance_components(axes, m)
 
     print("  Saving figure...")

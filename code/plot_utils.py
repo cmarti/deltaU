@@ -6,14 +6,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from gpmap.space import SequenceSpace
 from matplotlib import cm
 from scipy.stats import pearsonr
 
 ######################
 # Plotting constants #
 ######################
-DATASETS = ["smn1", "dmsc", "gb1", 'fyn-sh3']
+DATASETS = ["smn1", "dmsc", "gb1", "fyn-sh3"]
 FIG_WIDTH = 7.5
 STYLE_PATH = "style.sty"
 LINEPLOT_LW = 1
@@ -54,50 +53,6 @@ def apply_plot_style(overrides=None):
     plt.style.use(STYLE_PATH)
     if overrides:
         plt.rcParams.update(overrides)
-
-
-def plot_correlation_landscape(corr, axes, y="emp_cor"):
-    space = SequenceSpace(X=corr.index.values, y=corr[y].values)
-    edges_df = space.get_edges_df()
-
-    axes.scatter(
-        corr["d_jittered"], corr[y], color="black", s=7.5, alpha=0.5, lw=0
-    )
-    mplot.plot_edges(
-        axes, corr, edges_df, x="d_jittered", y=y, alpha=0.1, color="black"
-    )
-    axes.axhline(0, color="grey", linestyle="--", lw=0.75, alpha=0.5)
-    axes.set(
-        xlabel="Hamming distance",
-        ylabel="Prior correlation",
-        xticks=np.arange(space.seq_length + 1),
-    )
-
-
-def plot_interaction_matrix(a_matrix, axes, vmax=2e6, position_labels=None):
-    if vmax is None:
-        im = axes.imshow(a_matrix, cmap="binary")
-    else:
-        im = axes.imshow(a_matrix * 1e-6, cmap="binary", vmax=vmax * 1e-6)
-    labels = a_matrix.columns
-    if position_labels is not None:
-        labels = position_labels
-    n = a_matrix.shape[0]
-    axes.set(
-        xlabel="Site 1",
-        ylabel="Site 2",
-        xticks=np.arange(n),
-        yticks=np.arange(n),
-        xticklabels=labels,
-        yticklabels=labels,
-    )
-    plt.colorbar(
-        im,
-        ax=axes,
-        fraction=0.046,
-        pad=0.04,
-        label="Interaction strength ($1/a_{ij}$)",
-    )
 
 
 def add_r2_label(axes, r2, fontsize=6):
@@ -146,57 +101,6 @@ def add_panel_labels(subplots, labels, x_offset=-0.1, y_offset=1.05):
             va="top",
             ha="right",
         )
-
-
-def plot_sites_variance_components(axes, sites):
-    positions = sites.columns
-    ticks = np.arange(positions.shape[0])
-    orders = np.arange(1, 1 + positions.shape[0])
-    im = axes.imshow(
-        sites,
-        cmap="Greys",
-        vmin=0,
-        vmax=15,
-    )
-    axes.set(
-        xticks=ticks,
-        xticklabels=positions,
-        xlabel="Site",
-        yticks=ticks,
-        yticklabels=orders[::-1],
-        ylabel="Interaction order $k$",
-        aspect="equal",
-    )
-    plt.colorbar(
-        im, ax=axes, fraction=0.046, pad=0.04, label="% variance explained"
-    )
-
-
-def plot_site_pairs_variance_components(axes, m):
-    positions = m.columns
-    ticks = np.arange(positions.shape[0])
-    im = axes.imshow(
-        m,
-        cmap="Greys",
-        vmin=0,
-        vmax=60,
-    )
-    axes.set(
-        xticks=ticks,
-        xlabel="Site 1",
-        yticks=ticks,
-        xticklabels=positions,
-        yticklabels=positions,
-        ylabel="Site 2",
-        aspect="equal",
-    )
-    plt.colorbar(
-        im,
-        ax=axes,
-        fraction=0.046,
-        pad=0.04,
-        label="% pairwise and higher-order\nvariance explained",
-    )
 
 
 def plot_cv_r2_curves(r2, axes):
@@ -293,7 +197,6 @@ def plot_test_pred_comparison(test, axes, lims):
     )
 
 
-
 def arrange_axis(
     axes, x, y, ticks, lims, fontsize=8, xpos=0.52, ypos=0.52, ms=5
 ):
@@ -340,10 +243,10 @@ def arrange_axis(
         va="top",
     )
     sns.despine(ax=axes)
-    
-    
+
+
 def calc_hamming_distance(s1, s2):
-    return(np.sum([a1 != a2 for a1, a2 in zip(s1, s2)]))
+    return np.sum([a1 != a2 for a1, a2 in zip(s1, s2)])
 
 
 def calc_edges_df(seqs):
@@ -352,27 +255,30 @@ def calc_edges_df(seqs):
         s_i, s_j = seqs[i], seqs[j]
         if calc_hamming_distance(s_i, s_j) == 1:
             edges.append((i, j))
-    edges_df = pd.DataFrame(edges, columns=['i', 'j'])
-    return(edges_df)
+    edges_df = pd.DataFrame(edges, columns=["i", "j"])
+    return edges_df
 
 
 def plot_local_landscape(contrasts, seqs, axes, pos1="$_{2}$", pos2="$_{21}$"):
     edges_df = calc_edges_df(seqs)
-    nodes_df = pd.DataFrame({
-        "x": [calc_hamming_distance(s, seqs[0]) for s in seqs], 
-        "f": contrasts['estimate'].values,
-        'err': 2 * contrasts['std'].values},
-        index=seqs)
-    
+    nodes_df = pd.DataFrame(
+        {
+            "x": [calc_hamming_distance(s, seqs[0]) for s in seqs],
+            "f": contrasts["estimate"].values,
+            "err": 2 * contrasts["std"].values,
+        },
+        index=seqs,
+    )
+
     axes.errorbar(
-        nodes_df['x'],
-        nodes_df['f'],
-        yerr=nodes_df['err'],
-        fmt='none',
+        nodes_df["x"],
+        nodes_df["f"],
+        yerr=nodes_df["err"],
+        fmt="none",
         markersize=0.5,
-        color='black',
+        color="black",
         lw=0,
-        ecolor='black',
+        ecolor="black",
         elinewidth=0.5,
         capsize=1,
         capthick=0.5,
@@ -390,7 +296,7 @@ def plot_local_landscape(contrasts, seqs, axes, pos1="$_{2}$", pos2="$_{21}$"):
         edges_width=0.75,
         edges_color="lightgrey",
     )
-    for seq, x, y in zip(seqs, nodes_df['x'], nodes_df['f']):
+    for seq, x, y in zip(seqs, nodes_df["x"], nodes_df["f"]):
         axes.text(
             x,
             y + 0.2,
