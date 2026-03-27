@@ -9,8 +9,7 @@ This repository contains the code to reproduce the figures and analyses for in o
 The analyses were performed using Python 3.8 with the following libraries:
 
 - `gpmap-tools`
-- `logomaker`
-- `seaborn`
+- `pydeseq2`
 
 Additionally, this repository requires the following non-Python tools:
 
@@ -21,13 +20,13 @@ Additionally, this repository requires the following non-Python tools:
 Create a Conda environment with the required dependencies as follows:
 
 ```bash
-conda create -n ler python=3.8 
+conda create -n deltaU python=3.8 
 ```
 
 Activate the newly created environment and install additional Python dependencies provided in the `requirements.txt` file with the specific versions used in the original analysis:
 
 ```bash
-conda activate ler
+conda activate deltaU
 pip install -r requirements.txt
 ```
 
@@ -65,7 +64,7 @@ snakemake --snakefile Snakefile --cores 1 --use-conda figure3
 
 The provided scripts compute all necessary steps from the raw data in the `data` folder and populate the remaining folders in the repository:
 
-- `data/processed`: Contains raw data files downloaded from other sources.
+- `data/raw`: Contains raw data files downloaded from other sources.
 - `data/processed`: Contains intermediate files resulting from processing the raw data.
 - `results`: Provides the results of the analyses, typically as `.csv` files.
 - `figures`: Stores all panels for the different figures.
