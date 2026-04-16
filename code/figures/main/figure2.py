@@ -2,13 +2,12 @@ from code.plot_utils import (
     FIG_WIDTH,
     add_panel_labels,
     apply_plot_style,
-    plot_correlation_landscape,
     plot_cv_r2_curves,
-    plot_interaction_matrix,
 )
 
 import matplotlib.pyplot as plt
 import pandas as pd
+from gpmap.plot.mpl import plot_correlation_U_sites, plot_interaction_matrix
 from scipy.stats import pearsonr
 
 
@@ -54,6 +53,8 @@ if __name__ == "__main__":
         "results/simulations.corrs.csv", dtype={"seq": str}
     ).set_index("seq")
     r2 = pd.read_csv("results/simulations.r2.csv", index_col=0)
+    r2_2 = pd.read_csv("results/simulations.r2.2.csv", index_col=0)
+    r2 = pd.concat([r2, r2_2])
 
     print("Making figure...")
     fig, subplots = plt.subplots(
@@ -62,11 +63,12 @@ if __name__ == "__main__":
 
     print("  Plotting prior a matrix...")
     axes = subplots[0, 0]
-    plot_interaction_matrix(a_matrix, axes)
+    plot_interaction_matrix(a_matrix, axes,
+                            cbar_label="Interaction strength ($1/a_{ij}$)")
 
     print("  Plotting prior correlation landscape...")
     axes = subplots[0, 1]
-    plot_correlation_landscape(corr, axes, y="cor")
+    plot_correlation_U_sites(corr, axes, y="cor")
 
     print("  Plotting prior vs inferred correlation landscape...")
     axes = subplots[1, 0]

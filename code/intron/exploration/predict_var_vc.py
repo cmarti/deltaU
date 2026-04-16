@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from gpmap.inference import LocalEpistasisRegression
+from gpmap.inference import VCregression
 
 if __name__ == "__main__":
     dataset_label = 'intron.30C'
     
-    print(f"Predicting using Local Epistasis Regression model fitted to {dataset_label} data")
+    print(f"Predicting using VC Regression model fitted to {dataset_label} data")
     
     print('  Loading data...')
     data = pd.read_csv(f"data/processed/{dataset_label}.train.csv", index_col=0)
@@ -18,16 +18,15 @@ if __name__ == "__main__":
     a_values = np.load(fpath)
     print(f"    Loaded a_values: {a_values}")
 
-    fpath = f'results/{dataset_label}.ler.lambda_U.npy'
-    lambda_U = np.load(fpath)
-    print(f"    Loaded lambda_U: {lambda_U}")
+    fpath = f'results/{dataset_label}.vc.lambdas.npy'
+    lambdas = np.load(fpath)
+    print(f"    Loaded lambdas: {lambdas}")
 
     print('  Making predictions...')
-    model = LocalEpistasisRegression(seq_length=8, alphabet_type="dna", P=2,
-                                     a_values=a_values, lambda_U_lower_than_P=lambda_U)
+    model = VCregression(seq_length=8, alphabet_type="dna", lambdas=lambdas)
     model.set_data(X, y, y_var=y_var)
     pred = model.predict(X_pred=X_test, calc_variance=True)
     
     print('  Saving predictions...')
-    pred.to_csv(f'results/{dataset_label}.ler.pred.csv')
+    pred.to_csv(f'results/{dataset_label}.vc.pred.csv')
     print('Done.')

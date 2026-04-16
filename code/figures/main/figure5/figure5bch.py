@@ -27,8 +27,8 @@ if __name__ == "__main__":
     seqs_list = [
         ["GC", "GG", "CC", "CG"],
         ["AU", "AA", "UU", "UA"],
-        ["UA", "UG", "UC", "GA", "GG", "GC"],
-        ["AU", "GU", "CU", "AG", "GG", "CG"],
+        ["AC", "AG", "UC", "UG"],
+        ["GU", "GA", "CU", "CA"],
     ]
 
     for seqs, axes in zip(seqs_list, subplots):
@@ -37,7 +37,6 @@ if __name__ == "__main__":
         plot_local_landscape(c, seqs, axes)
         axes.set(
             xlim=(-0.5, 2.5),
-            # ylim=(-3 if len(xs) == 4 else -1.5, 1),
             ylim=(-3, 1),
             yticks=[-2, -1, 0],
             xlabel="",
@@ -49,8 +48,9 @@ if __name__ == "__main__":
     fig.supxlabel("Genotype at positions 2 and 21", fontsize=7, x=0.6, y=0.08)
     fig.supylabel("Average fitness", fontsize=7, y=0.55, x=0.1)
     fig.tight_layout(w_pad=0.5, h_pad=0.5)
-    fig.savefig(f"figures/{dataset_name}.local_landscapes.2-21.png", dpi=300)
-    fig.savefig(f"figures/{dataset_name}.local_landscapes.2-21.svg", dpi=300)
+    fname = "figures/figure5b"
+    fig.savefig(f"{fname}.png", dpi=300)
+    fig.savefig(f"{fname}.svg", dpi=300)
 
     print(
         "  Plotting context-dependent interactions between positions 3 and 20"
@@ -84,8 +84,9 @@ if __name__ == "__main__":
     fig.supxlabel("Genotype at positions 3 and 20", fontsize=7, x=0.6, y=0.08)
     fig.supylabel("Average fitness", fontsize=7, y=0.55, x=0.1)
     fig.tight_layout(w_pad=0.5, h_pad=0.5)
-    fig.savefig(f"figures/{dataset_name}.local_landscapes.2-3-20-21.png", dpi=300)
-    fig.savefig(f"figures/{dataset_name}.local_landscapes.2-3-20-21.svg", dpi=300)
+    fname = "figures/figure5c"
+    fig.savefig(f"{fname}.png", dpi=300)
+    fig.savefig(f"{fname}.svg", dpi=300)
     
     print(
         "  Plotting context-dependent interactions between positions 19 and 20"
@@ -120,7 +121,7 @@ if __name__ == "__main__":
     fig.supylabel("Average fitness", fontsize=7, y=0.55, x=0.1)
     fig.tight_layout(w_pad=0.5, h_pad=0.5)
     
-    fname = "figures/figure5bch"
+    fname = "figures/figure5h"
     fig.savefig(f"{fname}.png", dpi=300)
     fig.savefig(f"{fname}.svg", dpi=300)
     

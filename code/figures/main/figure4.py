@@ -3,6 +3,7 @@ from code.plot_utils import (
     POSITION_LABELS,
     add_panel_labels,
     apply_plot_style,
+    plot_cv_r2_curves,
     plot_pred_vs_obs_corr,
     plot_test_pred_comparison,
     plot_train_pred_comparison,
@@ -53,8 +54,10 @@ if __name__ == "__main__":
     print(f'    Coverage of 95% CI: {coverage*100:.2f}')
     
     # print('  Loading R2 curves data')
-    # r2 = pd.read_csv(f"results/{dataset_name}.r2.csv", index_col=0)
-    # print(r2)
+    # r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv", index_col=0)
+    
+    print("  Loading RMS epistatic coeffcients")
+    rmsec = pd.read_csv(f"results/{dataset_name}.ler.rmsec.csv", index_col=0)
     
     print("  Loading variance explained by interactions of order k for site i")
     fpath = f'results/{dataset_name}.ler.sites_variance_k.csv'
@@ -73,7 +76,7 @@ if __name__ == "__main__":
     print("  Plotting correlation landscape...")
     axes = subplots[0, 1]
     plot_correlation_U_sites(nodes_df, axes, y="emp_cor")
-    axes.set(ylabel="Observed correlation")
+    axes.set(ylabel="Observed correlation", xlabel='Hamming distance')
 
     print("  Plotting predicted vs observed correlations...")
     axes = subplots[0, 2]
@@ -86,14 +89,15 @@ if __name__ == "__main__":
         axes,
         vmax=None,
         position_labels=POSITION_LABELS[dataset_name],
+        cbar_label='Interaction strength ($1/a_{ij}$)'
     )
     
-    print("  Plotting predictions in training sequences")
-    axes = subplots[1, 0]
-    plot_train_pred_comparison(train, axes, lims=(-8, 6))
+    # print("  Plotting predictions in training sequences")
+    # axes = subplots[1, 0]
+    # plot_train_pred_comparison(train, axes, lims=(-8, 6))
     
     print("  Plotting predictions in held-out sequences")
-    axes = subplots[1, 1]
+    axes = subplots[1, 0]
     plot_test_pred_comparison(pred, axes, lims=(-8, 6))
     
     # print("  Plotting cross-validation curves")
@@ -102,8 +106,19 @@ if __name__ == "__main__":
     # axes.set(ylim=(0.2, 0.8))
     
     print("  Plotting variance explained by interactions of order k for site i")
-    axes = subplots[1, 2]
+    axes = subplots[1, 1]
     plot_sites_variance_components(axes, sites)
+    
+    print("  Plotting RMS epistatic coefficients")
+    axes = subplots[1, 2]
+    plot_interaction_matrix(
+        rmsec,
+        axes,
+        vmax=3,
+        position_labels=POSITION_LABELS[dataset_name],
+        cbar_label='RMS epistatic coefficient',
+        scale_factor=1.,
+    )
     
     print("  Plotting variance explained by interactions of order k=2 and k>2 for pairs of sites")
     axes = subplots[1, 3]

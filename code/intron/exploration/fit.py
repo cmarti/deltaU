@@ -3,7 +3,9 @@ import pandas as pd
 from gpmap.inference import LocalEpistasisRegression
 
 if __name__ == "__main__":
-    for dataset_name in ["smn1", "dmsc", "gb1", "fyn-sh3"]:
+    for dataset_name in ["smn1", "dmsc", "gb1", "fyn-sh3", "intron.30C"]:
+        np.random.seed(0)
+        
         print(f"Loading data for {dataset_name}...")
         data = pd.read_csv(
             f"data/processed/{dataset_name}.train.csv", index_col=0
@@ -16,22 +18,24 @@ if __name__ == "__main__":
         seq_length = len(X[0])
         print(f"  Loaded {X.shape[0]} training sequences")
 
-        test = pd.read_csv(
-            f"data/processed/{dataset_name}.test.csv", index_col=0
-        )
-        X_test = test.index.values
-        print(f"  Loaded {X_test.shape[0]} test sequences")
-
         print("Learning interaction strenghts...")
         model = LocalEpistasisRegression(
             seq_length=seq_length, alphabet_type="dna", P=2
         )
-        model.fit(X, y, y_var=y_var, method='Powell')
+        model.fit(X, y)
 
         print("  Saving correlations under the inferred prior...")
         corrs_df = model.get_empirical_pred_correlations_df()
         corrs_df["seq"] = corrs_df.index
         corrs_df.to_csv(f"results/{dataset_name}.corrs.csv", index=False)
+        
+        print("  Saving interaction strenghts a_ij")
+        fpath = f"results/{dataset_name}.ler.a.npy"
+        np.save(fpath, model.a_values)
+
+        print("  Saving interaction lambda_i and lambda_0")
+        fpath = f"results/{dataset_name}.ler.lambda_U.npy"
+        np.save(fpath, model.lambda_U_lower_than_P)
 
         print("  Saving interaction strenghts a_ij")
         position_labels = np.arange(1, model.seq_length + 1)

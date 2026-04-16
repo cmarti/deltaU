@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from itertools import combinations
 
 import gpmap.plot.mpl as mplot
@@ -12,10 +11,10 @@ from scipy.stats import pearsonr
 ######################
 # Plotting constants #
 ######################
-DATASETS = ["smn1", "dmsc", "gb1", "fyn-sh3"]
+DATASETS = ["smn1", "dmsc", "gb1", "fyn-sh3", "intron.30C"]
 FIG_WIDTH = 7.5
 STYLE_PATH = "style.sty"
-LINEPLOT_LW = 1
+LINEPLOT_LW = 0.75
 LINEPLOT_KWARGS = {
     "lw": LINEPLOT_LW,
     "err_style": "bars",
@@ -36,6 +35,16 @@ MODELS_PALETTE = {
     "CN": GREYS(0.45),
     "VC": GREYS(0.7),
     "LER": GREYS(0.99),
+    "Pairwise": 'grey',
+    "Additive": 'grey',
+}
+MODELS_STYLES = {
+    "MEI": "-",
+    "CN": "-",
+    "VC": "-",
+    "LER": "-",
+    "Pairwise": "--",
+    "Additive": ":",
 }
 POSITION_LABELS = {
     "smn1": ["-3", "-2", "-1", "+2", "+3", "+4", "+5", "+6"],
@@ -105,13 +114,14 @@ def add_panel_labels(subplots, labels, x_offset=-0.1, y_offset=1.05):
 
 def plot_cv_r2_curves(r2, axes):
     for model, color in MODELS_PALETTE.items():
-        df = r2.loc[r2["model"] == model, :]
+        df = r2.loc[r2["model"] == model, :].copy()
         sns.lineplot(
             x="p",
             y="r2_test",
             data=df,
             label=model,
             ax=axes,
+            linestyle=MODELS_STYLES[model],
             color=color,
             **LINEPLOT_KWARGS,
         )
@@ -121,13 +131,12 @@ def plot_cv_r2_curves(r2, axes):
         xlim=(0, 1),
         ylim=(0, 1),
     )
-    axes.legend(loc=4)
+    axes.legend(loc=4, ncol=2)
 
 
-def plot_train_pred_comparison(train, axes, lims):
+def plot_train_pred_comparison(train, axes, lims, x='f', y='y'):
     bins = np.linspace(lims[0], lims[-1], 100)
-    x, y = train["f"], train["y"]
-    r2 = pearsonr(x, y)[0] ** 2
+    x, y = train[x], train[y]
     sns.histplot(
         x=x,
         y=y,
@@ -158,6 +167,7 @@ def plot_train_pred_comparison(train, axes, lims):
         va="bottom",
         fontsize=6,
     )
+    r2 = pearsonr(x, y)[0] ** 2
     add_r2_label(axes, r2)
 
 
@@ -171,12 +181,23 @@ def plot_test_pred_comparison(test, axes, lims):
         y,
         xerr=xerr,
         yerr=yerr,
-        color="black",
-        fmt="o",
+        color="grey",
+        fmt="none",
         alpha=0.2,
         markeredgewidth=0,
         markersize=2.5,
         lw=0.5,
+        zorder=1
+    )
+    
+    axes.scatter(
+        x,
+        y,
+        color="black",
+        alpha=0.5,
+        s=2,
+        lw=0,
+        zorder=2
     )
     axes.set(
         xlim=lims,

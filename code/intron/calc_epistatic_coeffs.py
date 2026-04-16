@@ -1,7 +1,7 @@
+from code.plot_utils import POSITION_LABELS
+
 import numpy as np
 import pandas as pd
-
-from code.plot_utils import POSITION_LABELS
 
 
 def calc_mut_coeff(f, mut, positions_labels):

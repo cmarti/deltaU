@@ -10,7 +10,6 @@ if __name__ == "__main__":
     print('  Loading data...')
     data = pd.read_csv(f"data/processed/{dataset_label}.train.csv", index_col=0).dropna()
     X, y, y_var = data.index.values, data["y"].values, data["y_var"].values
-    # y_var = np.full_like(y, fill_value=0.6)
 
     print('  Loading model parameters...')
     fpath = f'results/{dataset_label}.ler.a.npy'

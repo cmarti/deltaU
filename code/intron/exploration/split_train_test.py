@@ -1,9 +1,11 @@
+from code.plot_utils import DATASETS
+
 import numpy as np
 import pandas as pd
 from gpmap.datasets import DataSet, list_available_datasets
 
 if __name__ == "__main__":
-    for dataset_name in ["smn1", "dmsc", "gb1", 'fyn-sh3']:
+    for dataset_name in DATASETS[:-1]:
         np.random.seed(0)
         p = 0.2
 

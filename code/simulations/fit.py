@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-
 from gpmap.inference import LocalEpistasisRegression
-
 
 if __name__ == "__main__":
     print('Loading data...')

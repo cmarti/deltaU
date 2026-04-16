@@ -3,6 +3,7 @@ from code.plot_utils import (
     POSITION_LABELS,
     add_panel_labels,
     apply_plot_style,
+    plot_cv_r2_curves,
     plot_pred_vs_obs_corr,
 )
 
@@ -16,7 +17,7 @@ if __name__ == "__main__":
 
     print("Making figure...")
     fig, subplots = plt.subplots(
-        2, 3, figsize=(0.85 * FIG_WIDTH, 0.475 * FIG_WIDTH)
+        2, 4, figsize=(1.2 * FIG_WIDTH, 0.475 * FIG_WIDTH)
     )
 
     for dataset_name, ax_row in zip(dataset_names, subplots):
@@ -28,12 +29,12 @@ if __name__ == "__main__":
         inferred_corr = pd.read_csv(
             f"results/{dataset_name}.corrs.csv", dtype={"seq": str}
         ).set_index("seq")
-        # r2 = pd.read_csv(f"results/{dataset_name}.r2.csv")
+        r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv")
 
         print("  Plotting empirical correlation landscape...")
         axes = ax_row[0]
         plot_correlation_U_sites(inferred_corr, axes, y="emp_cor")
-        axes.set(ylabel="Observed correlation")
+        axes.set(ylabel="Observed correlation", xlabel='Hamming distance')
         
         print("  Plotting prior vs inferred correlation landscape...")
         axes = ax_row[1]
@@ -46,15 +47,16 @@ if __name__ == "__main__":
             axes,
             vmax=None,
             position_labels=POSITION_LABELS[dataset_name],
+            cbar_label='Interaction strength ($1/a_{ij}$)'
         )
-        # print("  Plotting R2 vs training set size for model comparison...")
-        # axes = subplots[3]
-        # plot_cv_r2_curves(r2, axes)
+        print("  Plotting R2 vs training set size for model comparison...")
+        axes = ax_row[3]
+        plot_cv_r2_curves(r2, axes)
 
     print("  Saving figure...")
     fig.tight_layout()
-    fig.subplots_adjust(left=0.1, right=0.9, bottom=0.1, top=0.95)
-    add_panel_labels(subplots, ["A", "B", "C", "D", "E", "F"], x_offset=-0.22)
+    fig.subplots_adjust(left=0.065, right=0.975, bottom=0.1, top=0.975)
+    add_panel_labels(subplots, ["A", "B", "C", "D", "E", "F", 'G', "H"], x_offset=-0.22)
     fig.savefig("figures/figure3.png", dpi=300)
     fig.savefig("figures/figure3.svg", dpi=300)
     print("Done.")
