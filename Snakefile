@@ -133,7 +133,7 @@ rule split_datasets:
         "data/processed/fyn-sh3.train.csv",
         "data/processed/fyn-sh3.test.csv",
     shell:
-        "python code/intron/exploration/split_train_test.py"
+        "python code/datasets/split_train_test.py"
 
 rule fit_datasets:
     input:
@@ -155,7 +155,7 @@ rule fit_datasets:
         "results/fyn-sh3.corrs.csv",
         "results/fyn-sh3.inferred_interaction_strength.csv",
     shell:
-        "python code/intron/exploration/fit.py"
+        "python code/datasets/fit.py"
 
 rule split_cv_data:
     input:
