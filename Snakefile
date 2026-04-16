@@ -380,7 +380,12 @@ rule plot_figureS2:
 rule plot_figureS3:
     input:
         "results/intron.30C.edges.npz",
+        "results/intron.30C.ler.map.mf_0.nodes.pq",
+        "results/intron.30C.ler.map.mf_0.4.nodes.pq",
+        "results/intron.30C.ler.map.mf_0.8.nodes.pq",
+        "results/intron.30C.ler.map.mf_1.2.nodes.pq",
         "results/intron.30C.ler.map.mf_1.6.nodes.pq",
+        "results/intron.30C.ler.map.mf_1.8.nodes.pq",
     output:
         "figures/figureS3.png",
         "figures/figureS3.svg",
@@ -390,12 +395,7 @@ rule plot_figureS3:
 rule plot_figureS4:
     input:
         "results/intron.30C.edges.npz",
-        "results/intron.30C.ler.map.mf_0.nodes.pq",
-        "results/intron.30C.ler.map.mf_0.4.nodes.pq",
-        "results/intron.30C.ler.map.mf_0.8.nodes.pq",
-        "results/intron.30C.ler.map.mf_1.2.nodes.pq",
         "results/intron.30C.ler.map.mf_1.6.nodes.pq",
-        "results/intron.30C.ler.map.mf_1.8.nodes.pq",
     output:
         "figures/figureS4.png",
         "figures/figureS4.svg",
