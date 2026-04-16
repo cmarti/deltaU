@@ -1,6 +1,6 @@
 shell.prefix("source activate.sh ; source $(conda info --base)/etc/profile.d/conda.sh ; conda activate deltaU ; ")
 
-INTRON_MFS = [0, 0.4, 0.8, 1.2, 1.6, 2]
+INTRON_MFS = [0, 0.4, 0.8, 1.2, 1.6, 1.8]
 DATASETS = ["smn1", "dmsc", "gb1", "fyn-sh3", "intron.30C"]
 CV_SPLIT_IDS = list(range(1, 31))
 CV_MODELS = ["MEI", "VC", "CN", "LER", "Additive", "Pairwise"]
