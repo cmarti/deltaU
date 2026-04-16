@@ -1,6 +1,9 @@
 shell.prefix("source activate.sh ; source $(conda info --base)/etc/profile.d/conda.sh ; conda activate deltaU ; ")
 
 INTRON_MFS = [0, 0.4, 0.8, 1.2, 1.6, 2]
+DATASETS = ["smn1", "dmsc", "gb1", "fyn-sh3", "intron.30C"]
+CV_SPLIT_IDS = list(range(1, 31))
+CV_MODELS = ["MEI", "VC", "CN", "LER", "Additive", "Pairwise"]
 
 rule figure2:
     input:
@@ -17,7 +20,9 @@ rule figure4:
 rule figure5:
     input:
         "figures/figure5a.png",
-        "figures/figure5bch.png",
+        "figures/figure5b.png",
+        "figures/figure5c.png",
+        "figures/figure5h.png",
         "figures/figure5defg.png",
 
 rule figureS1:
@@ -32,6 +37,10 @@ rule figureS3:
     input:
         "figures/figureS3.png",
 
+rule figureS4:
+    input:
+        "figures/figureS4.png",
+
 rule main_figures:
     input:
         rules.figure2.input,
@@ -44,6 +53,7 @@ rule supplementary_figures:
         rules.figureS1.input,
         rules.figureS2.input,
         rules.figureS3.input,
+        rules.figureS4.input,
 
 rule all:
     input:
@@ -94,6 +104,7 @@ rule plot_figure2:
         "results/simulations.prior_correlations.csv",
         "results/simulations.corrs.csv",
         "results/simulations.r2.csv",
+        "results/simulations.r2.2.csv",
     output:
         "figures/figure2.png",
         "figures/figure2.svg",
@@ -123,7 +134,7 @@ rule split_datasets:
         "data/processed/fyn-sh3.train.csv",
         "data/processed/fyn-sh3.test.csv",
     shell:
-        "python code/datasets/split_train_test.py"
+        "python code/intron/exploration/split_train_test.py"
 
 rule fit_datasets:
     input:
@@ -145,14 +156,44 @@ rule fit_datasets:
         "results/fyn-sh3.corrs.csv",
         "results/fyn-sh3.inferred_interaction_strength.csv",
     shell:
-        "python code/datasets/fit.py"
+        "python code/intron/exploration/fit.py"
+
+rule split_cv_data:
+    input:
+        "data/processed/fyn-sh3.csv",
+        "data/processed/intron.30C.csv",
+    output:
+        expand("data/processed/splits/{dataset}.splits.csv", dataset=DATASETS),
+        expand("data/processed/splits/{dataset}.{i}.train.csv", dataset=DATASETS, i=CV_SPLIT_IDS),
+        expand("data/processed/splits/{dataset}.{i}.test.csv", dataset=DATASETS, i=CV_SPLIT_IDS),
+    shell:
+        "python code/datasets/split_cv_data.py"
+
+rule calc_datasets_r2_curves:
+    input:
+        rules.split_cv_data.output,
+    output:
+        expand("data/processed/splits/{dataset}.{i}.{model}.json",
+               dataset=DATASETS, i=CV_SPLIT_IDS, model=CV_MODELS),
+    shell:
+        "python code/datasets/calc_r2_curves.py"
+
+rule merge_datasets_r2_curves:
+    input:
+        rules.calc_datasets_r2_curves.output,
+    output:
+        expand("results/{dataset}.r2_curves.csv", dataset=DATASETS),
+    shell:
+        "python code/datasets/merge_cv_data.py"
 
 rule plot_figure3:
     input:
         "results/smn1.corrs.csv",
         "results/smn1.inferred_interaction_strength.csv",
+        "results/smn1.r2_curves.csv",
         "results/dmsc.corrs.csv",
         "results/dmsc.inferred_interaction_strength.csv",
+        "results/dmsc.r2_curves.csv",
     output:
         "figures/figure3.png",
         "figures/figure3.svg",
@@ -163,8 +204,10 @@ rule plot_figureS1:
     input:
         "results/gb1.corrs.csv",
         "results/gb1.inferred_interaction_strength.csv",
+        "results/gb1.r2_curves.csv",
         "results/fyn-sh3.corrs.csv",
         "results/fyn-sh3.inferred_interaction_strength.csv",
+        "results/fyn-sh3.r2_curves.csv",
     output:
         "figures/figureS1.png",
         "figures/figureS1.svg",
@@ -240,8 +283,10 @@ rule intron_calc_variance_components:
     input:
         "results/intron.30C.ler.landscape.csv",
     output:
+        "results/intron.30C.ler.variance_k.csv",
         "results/intron.30C.ler.sites_variance_k.csv",
         "results/intron.30C.ler.sites_pairs_variance.csv",
+        "results/intron.30C.ler.rmsec.csv",
     shell:
         "python code/intron/calc_variance_components.py"
 
@@ -263,13 +308,13 @@ rule intron_calc_epistatic_coefficients:
     shell:
         "python code/intron/calc_epistatic_coeffs.py"
 
-rule intron_calc_r2_curves:
+rule intron_calc_models_predictions:
     input:
-        "data/processed/intron.30C.csv",
+        "data/processed/intron.30C.train.csv",
     output:
-        "results/intron.30C.r2.csv",
+        "results/intron.30C.models_predictions.csv",
     shell:
-        "python code/intron/calc_r2_curves.py"
+        "python code/intron/calc_models_predictions.py"
 
 rule plot_figure4:
     input:
@@ -279,6 +324,7 @@ rule plot_figure4:
         "results/intron.30C.interaction_strength.csv",
         "results/intron.30C.ler.landscape.csv",
         "results/intron.30C.ler.pred.csv",
+        "results/intron.30C.ler.rmsec.csv",
         "results/intron.30C.ler.sites_variance_k.csv",
         "results/intron.30C.ler.sites_pairs_variance.csv",
     output:
@@ -301,8 +347,12 @@ rule plot_figure5bch:
     input:
         "results/intron.30C.ler.contrasts.csv",
     output:
-        "figures/figure5bch.png",
-        "figures/figure5bch.svg",
+        "figures/figure5b.png",
+        "figures/figure5b.svg",
+        "figures/figure5c.png",
+        "figures/figure5c.svg",
+        "figures/figure5h.png",
+        "figures/figure5h.svg",
     shell:
         "python code/figures/main/figure5/figure5bch.py"
 
@@ -319,8 +369,9 @@ rule plot_figure5defg:
 
 rule plot_figureS2:
     input:
-        "results/intron.30C.edges.npz",
-        expand("results/intron.30C.ler.map.mf_{mf}.nodes.pq", mf=INTRON_MFS),
+        "results/intron.30C.r2_curves.csv",
+        "results/intron.30C.models_predictions.csv",
+        "data/processed/intron.30C.test.csv",
     output:
         "figures/figureS2.png",
         "figures/figureS2.svg",
@@ -329,10 +380,25 @@ rule plot_figureS2:
 
 rule plot_figureS3:
     input:
-        "results/intron.30C.ler.map.mf_1.6.nodes.pq",
         "results/intron.30C.edges.npz",
+        "results/intron.30C.ler.map.mf_1.6.nodes.pq",
     output:
         "figures/figureS3.png",
         "figures/figureS3.svg",
     shell:
         "python code/figures/supp/figureS3.py"
+
+rule plot_figureS4:
+    input:
+        "results/intron.30C.edges.npz",
+        "results/intron.30C.ler.map.mf_0.nodes.pq",
+        "results/intron.30C.ler.map.mf_0.4.nodes.pq",
+        "results/intron.30C.ler.map.mf_0.8.nodes.pq",
+        "results/intron.30C.ler.map.mf_1.2.nodes.pq",
+        "results/intron.30C.ler.map.mf_1.6.nodes.pq",
+        "results/intron.30C.ler.map.mf_1.8.nodes.pq",
+    output:
+        "figures/figureS4.png",
+        "figures/figureS4.svg",
+    shell:
+        "python code/figures/supp/figureS4.py"
