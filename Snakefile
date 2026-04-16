@@ -104,7 +104,6 @@ rule plot_figure2:
         "results/simulations.prior_correlations.csv",
         "results/simulations.corrs.csv",
         "results/simulations.r2.csv",
-        "results/simulations.r2.2.csv",
     output:
         "figures/figure2.png",
         "figures/figure2.svg",

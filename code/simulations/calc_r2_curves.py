@@ -54,7 +54,7 @@ if __name__ == "__main__":
                 f_test_pred = y_pred.loc[X_test, "f"].values
 
                 record = evaluate_predictions(
-                    y_pred, X_train, X_test, y_train, f_test, label=label
+                    y_pred, X_train, X_test, y_train, f_test, label=label, p=p
                 )
                 results.append(record)
 

@@ -53,8 +53,6 @@ if __name__ == "__main__":
         "results/simulations.corrs.csv", dtype={"seq": str}
     ).set_index("seq")
     r2 = pd.read_csv("results/simulations.r2.csv", index_col=0)
-    r2_2 = pd.read_csv("results/simulations.r2.2.csv", index_col=0)
-    r2 = pd.concat([r2, r2_2])
 
     print("Making figure...")
     fig, subplots = plt.subplots(
