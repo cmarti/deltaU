@@ -50,7 +50,12 @@ if __name__ == "__main__":
     cmap = "coolwarm"
     columns = ["G2C", "C21G", "G3C_C20G", "A3U_U20A"]
     for axes, label in zip(fig.axes, columns):
-        print(f"    Coloring by epistati coefficient between {label}")
+        if "_" in label:
+            cbar_label = f"Epistatic coefficient\n{label.replace('_', '-')}"
+        else:
+            cbar_label = f"Mutational effect\n{label}"
+            
+        print(f"    Coloring by {label}")
         legendx, legendy = -0.05, 0.25
         nodes_hist_axes = axes.inset_axes((legendx, legendy - 0.125, 0.25, 0.1))
         nodes_cbar_axes = axes.inset_axes((legendx, legendy - 0.15, 0.25, 0.02))
@@ -81,10 +86,7 @@ if __name__ == "__main__":
         nodes_hist_axes.set_facecolor("none")
         nodes_cbar_axes.set(xticks=[-4, -2, 0, 2, 4])
         nodes_cbar_axes.set_xticklabels([-4, -2, 0, 2, 4], fontsize=6)
-        if "_" in label:
-            cbar_label = f"Epistatic coefficient\n{label.replace('_', '-')}"
-        else:
-            cbar_label = f"Mutational effect\n{label}"
+        
         nodes_cbar_axes.set_xlabel(cbar_label, fontsize=7)
         arrange_axis(
             axes,

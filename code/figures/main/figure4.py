@@ -3,10 +3,8 @@ from code.plot_utils import (
     POSITION_LABELS,
     add_panel_labels,
     apply_plot_style,
-    plot_cv_r2_curves,
     plot_pred_vs_obs_corr,
     plot_test_pred_comparison,
-    plot_train_pred_comparison,
 )
 
 import matplotlib.pyplot as plt
@@ -53,9 +51,6 @@ if __name__ == "__main__":
     print(f'    Total test sequences: {pred.shape[0]}')
     print(f'    Coverage of 95% CI: {coverage*100:.2f}')
     
-    # print('  Loading R2 curves data')
-    # r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv", index_col=0)
-    
     print("  Loading RMS epistatic coeffcients")
     rmsec = pd.read_csv(f"results/{dataset_name}.ler.rmsec.csv", index_col=0)
     
@@ -92,18 +87,9 @@ if __name__ == "__main__":
         cbar_label='Interaction strength ($1/a_{ij}$)'
     )
     
-    # print("  Plotting predictions in training sequences")
-    # axes = subplots[1, 0]
-    # plot_train_pred_comparison(train, axes, lims=(-8, 6))
-    
     print("  Plotting predictions in held-out sequences")
     axes = subplots[1, 0]
     plot_test_pred_comparison(pred, axes, lims=(-8, 6))
-    
-    # print("  Plotting cross-validation curves")
-    # axes = subplots[1, 1]
-    # plot_cv_r2_curves(r2, axes)
-    # axes.set(ylim=(0.2, 0.8))
     
     print("  Plotting variance explained by interactions of order k for site i")
     axes = subplots[1, 1]

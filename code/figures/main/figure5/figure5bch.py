@@ -100,8 +100,10 @@ if __name__ == "__main__":
     )
     subplots = subplots.flatten()
 
-    backgrounds = ['GC',  'CG','AU', 'UA', 'AC', 'AG']
-    seqs = ['GC', 'GG', 'CC', 'CG']
+    backgrounds = ['CG', 'GC',
+                   'UA', 'AU',
+                   'AG', 'AC']
+    seqs = ['CC', 'GC', 'CG', 'GG']
 
     for background, axes in zip(backgrounds, subplots):
         label = background[0] + "$_{2}$" + background[1] + "$_{21}$ background"

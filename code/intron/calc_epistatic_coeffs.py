@@ -30,7 +30,7 @@ def calc_epistatic_coeff(f, mut1, mut2, positions_labels):
 
     alleles = seqs_array.copy()
     alleles[:, pos1] = a11
-    alleles[:, pos2] = a12
+    alleles[:, pos2] = a21
     s11 = np.array(["".join(x) for x in alleles])
 
     alleles = seqs_array.copy()
@@ -39,12 +39,12 @@ def calc_epistatic_coeff(f, mut1, mut2, positions_labels):
     s12 = np.array(["".join(x) for x in alleles])
 
     alleles = seqs_array.copy()
-    alleles[:, pos1] = a21
-    alleles[:, pos2] = a12
+    alleles[:, pos1] = a12
+    alleles[:, pos2] = a21
     s21 = np.array(["".join(x) for x in alleles])
 
     alleles = seqs_array.copy()
-    alleles[:, pos1] = a21
+    alleles[:, pos1] = a12
     alleles[:, pos2] = a22
     s22 = np.array(["".join(x) for x in alleles])
 
@@ -74,14 +74,14 @@ if __name__ == "__main__":
 
     results = {}
     print("  Calculating mutational effects")
-    mutations = ["G0C", "A0U", "G1C", "C6G", "A1U", "U6A", "G5C", "C6G", 'C7G']
+    mutations = ["G0C",'C7G']
     for mut in mutations:
         print(f"    For mutation {mut}")
         label, values = calc_mut_coeff(data["f"], mut, positions_labels)
         results[label] = values
 
     print("  Calculating epistatic coefficients")
-    mutation_pairs = [["G1C", "C6G"], ["A1U", "U6A"], ["G5C", "C6G"]]
+    mutation_pairs = [["G1C", "C6G"], ["A1U", "U6A"]]
     for mut1, mut2 in mutation_pairs:
         print(f"    For mutations {mut1}-{mut2}")
         label, values = calc_epistatic_coeff(
@@ -89,6 +89,7 @@ if __name__ == "__main__":
         )
         results[label] = values
     results = pd.DataFrame(results, index=data.index)
+    print(results)
 
     print("Saving computed mutational effects and epistatic coefficients")
     results.to_csv(f"results/{dataset_name}.ler.epistatic_coefficients.csv")
