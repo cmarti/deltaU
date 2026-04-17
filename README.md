@@ -60,6 +60,8 @@ You can also generate panels for specific figures of interest, for example:
 snakemake --snakefile Snakefile --cores 1 --use-conda figure3
 ```
 
+Note: computation of the R2 values for different amounts of training data is computationally expensive. We provide the R2 values in the repository and the code to obtain it is commented out in the Snakefile.
+
 ## Output
 
 The provided scripts compute all necessary steps from the raw data in the `data` folder and populate the remaining folders in the repository:

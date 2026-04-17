@@ -157,33 +157,33 @@ rule fit_datasets:
     shell:
         "python code/datasets/fit.py"
 
-rule split_cv_data:
-    input:
-        "data/processed/fyn-sh3.csv",
-        "data/processed/intron.30C.csv",
-    output:
-        expand("data/processed/splits/{dataset}.splits.csv", dataset=DATASETS),
-        expand("data/processed/splits/{dataset}.{i}.train.csv", dataset=DATASETS, i=CV_SPLIT_IDS),
-        expand("data/processed/splits/{dataset}.{i}.test.csv", dataset=DATASETS, i=CV_SPLIT_IDS),
-    shell:
-        "python code/datasets/split_cv_data.py"
+# rule split_cv_data:
+#     input:
+#         "data/processed/fyn-sh3.csv",
+#         "data/processed/intron.30C.csv",
+#     output:
+#         expand("data/processed/splits/{dataset}.splits.csv", dataset=DATASETS),
+#         expand("data/processed/splits/{dataset}.{i}.train.csv", dataset=DATASETS, i=CV_SPLIT_IDS),
+#         expand("data/processed/splits/{dataset}.{i}.test.csv", dataset=DATASETS, i=CV_SPLIT_IDS),
+#     shell:
+#         "python code/datasets/split_cv_data.py"
 
-rule calc_datasets_r2_curves:
-    input:
-        rules.split_cv_data.output,
-    output:
-        expand("data/processed/splits/{dataset}.{i}.{model}.json",
-               dataset=DATASETS, i=CV_SPLIT_IDS, model=CV_MODELS),
-    shell:
-        "python code/datasets/calc_r2_curves.py"
+# rule calc_datasets_r2_curves:
+#     input:
+#         rules.split_cv_data.output,
+#     output:
+#         expand("data/processed/splits/{dataset}.{i}.{model}.json",
+#                dataset=DATASETS, i=CV_SPLIT_IDS, model=CV_MODELS),
+#     shell:
+#         "python code/datasets/calc_r2_curves.py"
 
-rule merge_datasets_r2_curves:
-    input:
-        rules.calc_datasets_r2_curves.output,
-    output:
-        expand("results/{dataset}.r2_curves.csv", dataset=DATASETS),
-    shell:
-        "python code/datasets/merge_cv_data.py"
+# rule merge_datasets_r2_curves:
+#     input:
+#         rules.calc_datasets_r2_curves.output,
+#     output:
+#         expand("results/{dataset}.r2_curves.csv", dataset=DATASETS),
+#     shell:
+#         "python code/datasets/merge_cv_data.py"
 
 rule plot_figure3:
     input:
