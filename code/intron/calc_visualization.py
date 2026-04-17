@@ -6,6 +6,7 @@ from scipy.stats import percentileofscore
 if __name__ == "__main__":
     dataset_label = 'intron.30C'
     wt = 'AGGTACAT'
+    mean_functions = [0, 0.4, 0.8, 1.2, 1.6, 1.8]
     print(f"Calculating visualization for {dataset_label} dataset")
     
     print("  Loading inferred landscape...")
@@ -20,7 +21,7 @@ if __name__ == "__main__":
     rw = WMWalk(space)
     space.write_edges(f"results/{dataset_label}.edges.npz")
     
-    for mean_function in [0, 0.4, 0.8, 1.2, 1.6, 2]:
+    for mean_function in mean_functions:
         perc = percentileofscore(f, mean_function)
         print(f"    Stationary mean function of {mean_function} ({perc:.2f}% percentile)")
         rw.calc_visualization(mean_function=mean_function, n_components=20)
