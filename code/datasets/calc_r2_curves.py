@@ -40,6 +40,9 @@ if __name__ == "__main__":
             }
             
             for label, model in models.items():
+                if label == 'MEI' and dataset_name == 'smn1':
+                    continue
+                
                 print(f"  {label} model")
                 print("    Fitting")
                 if label == 'MEI':
