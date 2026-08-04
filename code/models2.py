@@ -1,19 +1,12 @@
 
-from itertools import combinations, product
+from itertools import product, combinations
 
 import numpy as np
 import pandas as pd
-from gpmap.linop import (
-    DiagonalOperator,
-    KronOperator,
-    SelIdxOperator,
-    StackedOperator,
-)
+from gpmap.linop import StackedOperator, KronOperator, SelIdxOperator, DiagonalOperator
+from scipy.stats import pearsonr
 from scipy.linalg import orth
 from scipy.sparse.linalg import minres
-from scipy.special import comb
-from scipy.stats import pearsonr
-from tqdm import tqdm
 
 
 class TruncatedBasisOperator(StackedOperator):
@@ -29,16 +22,12 @@ class TruncatedBasisOperator(StackedOperator):
         
         As = []
         rank = 0
-        self.k_sizes = []
         for k in range(self.max_k + 1):
-            k_size = 0
             for j in combinations(self.positions, k):
                 matrices = [b[int(i in j)] for i, b in enumerate(self.site_basis)]
                 A = KronOperator(matrices)
                 As.append(A)
-                rank  += A.shape[1]
-                k_size += A.shape[1]
-            self.k_sizes.append(k_size)
+                rank += A.shape[1]
         self.rank = rank
         super().__init__(linops=As, axis=1)
     
@@ -53,31 +42,16 @@ class TruncatedBasisOperator(StackedOperator):
 
 
 class TruncatedModel:
-    def __init__(self, genotypes, max_k, lambda_k=None):
+    def __init__(self, genotypes, max_k):
         alleles = np.array([[c for c in s] for s in genotypes])
         self.max_k = max_k
         self.alphabets = [np.unique(x) for x in alleles.T]
-        self.seq_length = len(self.alphabets)
         self.alphas = [alphabet.shape[0] for alphabet in self.alphabets]
         self.genotypes = np.array([''.join(g) for g in product(*self.alphabets)])
         self.basis = TruncatedBasisOperator(alphas=self.alphas, max_k=self.max_k)
         self.genotypes_idx = {g: i for i, g in enumerate(self.genotypes)}
         self.n_params = self.basis.shape[1]
         self.beta = np.zeros(self.n_params)
-        self.set_lambda(lambda_k)
-    
-    def set_lambda(self, lambda_k):
-        if lambda_k is None:
-            lambda_k = np.zeros(self.n_params)
-        else:
-            assert lambda_k.shape == (self.max_k + 1, ), "lambda_k must have length max_k + 1"
-            lambdas = []
-            for k_size, lda in zip(self.basis.k_sizes, lambda_k):
-                lambdas.extend([lda] * k_size)
-            lambda_k = np.array(lambdas)
-            # print(lambda_k.shape, self.n_params)
-        self.lambda_k = lambda_k
-        self.Lambda = DiagonalOperator(lambda_k)
     
     def fit(self, X, y, y_var=None):
         idx = np.array([self.genotypes_idx[g] for g in X])
@@ -87,63 +61,17 @@ class TruncatedModel:
         Xt = self.basis.transpose() @ S.transpose()
         
         if y_var is None or np.allclose(y_var, 0):
-            A = Xt @ X #+ self.Lambda
+            A = Xt @ X
             b = Xt @ y
         else:
             D_var_inv = DiagonalOperator(1 /y_var)
-            A = Xt @ D_var_inv @ X# + self.Lambda
+            A = Xt @ D_var_inv @ X
             b = Xt @ D_var_inv @ y
         self.result = minres(A, b)
         self.beta = self.result[0]
     
     def predict(self):
         return pd.DataFrame({'f': self.basis @ self.beta}, index=self.genotypes)
-    
-    def calc_loss(self, X, y, y_var=None):
-        idx = np.array([self.genotypes_idx[g] for g in X])
-        n = self.basis.shape[0]
-        S = SelIdxOperator(n, idx)
-        X = S @ self.basis
-        yhat = X @ self.beta
-        res = y - yhat
-        if y_var is None:
-            loss = np.mean(res ** 2)
-        else:
-            loss = np.mean(res ** 2 / y_var)
-        return loss
-    
-    def optimize_regularization_k3(self, X, y, y_var=None):
-        if self.max_k != 3:
-            raise ValueError("optimize_regularization_k3 is only applicable for max_k=3")
-        
-        # Creating 
-        lambda_grid = np.logspace(-5, 5, 20)
-        u = np.random.uniform(size=len(X))
-        cuts = np.percentile(u, q=[0, 20, 40, 60, 80, 100])
-        
-        loss = []
-        for lambda_k3 in tqdm(lambda_grid):
-            lambda_k3_loss = []
-            for u_min, u_max in zip(cuts, cuts[1:]):
-                test_idx = (u >= u_min) & (u < u_max)
-                train_idx = ~test_idx
-                
-                train_X, train_y = X[train_idx], y[train_idx]
-                test_X, test_y = X[test_idx], y[test_idx]
-                if y_var is not None:
-                    train_y_var, test_y_var = y_var[train_idx], y_var[test_idx]
-                else:
-                    train_y_var, test_y_var = None, None
-                
-                self.set_lambda(np.array([0, 0, 0, lambda_k3]))
-                self.fit(train_X, train_y, y_var=train_y_var)
-                lambda_k3_loss.append(self.calc_loss(test_X, test_y, y_var=test_y_var))
-            loss.append(lambda_k3_loss)
-        self.cv_loss = np.array(loss)
-        self.lambda_grid = lambda_grid
-        
-        self.best_lambda_k3 = lambda_grid[np.argmin(np.mean(self.cv_loss, axis=1))]
-        self.set_lambda(np.array([0, 0, 0, self.best_lambda_k3]))
 
 
 def evaluate_predictions(y_pred, X_train, X_test, y_train, y_test, label, p):

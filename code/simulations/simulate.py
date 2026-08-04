@@ -87,6 +87,8 @@ if __name__ == "__main__":
     K_sqrt = model.K
     K_sqrt.set_lambdas(np.sqrt(model.K.lambdas))
     f = K_sqrt @ np.random.normal(size=K_sqrt.shape[0])
+    
+    print(np.std(f))
     y_sd = np.full_like(f, 0.2)
     y_var = np.square(y_sd)
     y = np.random.normal(f, scale=y_sd)

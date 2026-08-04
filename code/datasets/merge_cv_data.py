@@ -5,7 +5,7 @@ from os.path import exists
 import pandas as pd
 
 if __name__ == "__main__":
-    models = ['MEI', 'VC', 'CN', 'LER', 'Additive', 'Pairwise']
+    models = ['MEI', 'VC', 'CN', 'SitesVC', 'LER', 'Additive', 'Pairwise', 'Threeway']
     for dataset_name in DATASETS:
         results = []
         splits = pd.read_csv(f"data/processed/splits/{dataset_name}.splits.csv", index_col=0)

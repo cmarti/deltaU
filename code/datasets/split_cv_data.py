@@ -32,6 +32,9 @@ if __name__ == "__main__":
             data = pd.read_csv(f'data/processed/{dataset_name}.csv', index_col=0)
         else:
             data = DataSet(dataset_name).data
+        sd = data['y'].std()
+        data['y'] /= sd
+        data['y_var'] /= sd ** 2
 
         print("  Making splits")
         results = []

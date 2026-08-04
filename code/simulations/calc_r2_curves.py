@@ -1,4 +1,4 @@
-from code.models import TruncatedModel, evaluate_predictions
+from code.models2 import TruncatedModel, evaluate_predictions
 
 import numpy as np
 import pandas as pd
@@ -18,6 +18,7 @@ if __name__ == "__main__":
     models = {
         "Additive": TruncatedModel(genotypes=X, max_k=1),
         "Pairwise": TruncatedModel(genotypes=X, max_k=2),
+        "Threeway": TruncatedModel(genotypes=X, max_k=3),
         "MEI": MinimumEpistasisInterpolator(
             seq_length=8, alphabet_type="rna", P=2
         ),

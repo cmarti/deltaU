@@ -1,4 +1,4 @@
-from code.models import TruncatedModel
+from code.models2 import TruncatedModel
 
 import pandas as pd
 from gpmap.inference import (

@@ -30,6 +30,7 @@ if __name__ == "__main__":
             f"results/{dataset_name}.corrs.csv", dtype={"seq": str}
         ).set_index("seq")
         r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv")
+        print(r2)
 
         print("  Plotting empirical correlation landscape...")
         axes = ax_row[0]

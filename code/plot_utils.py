@@ -34,7 +34,9 @@ MODELS_PALETTE = {
     "MEI": GREYS(0.2),
     "CN": GREYS(0.45),
     "VC": GREYS(0.7),
-    "LER": GREYS(0.99),
+    "SitesVC": GREYS(0.99),
+    "LER": GREYS(0.85),
+    "Threeway": 'grey',
     "Pairwise": 'grey',
     "Additive": 'grey',
 }
@@ -43,8 +45,10 @@ MODELS_STYLES = {
     "CN": "-",
     "VC": "-",
     "LER": "-",
+    "SitesVC": "-",
     "Pairwise": "--",
     "Additive": ":",
+    "Threeway": "-.",
 }
 POSITION_LABELS = {
     "smn1": ["-3", "-2", "-1", "+2", "+3", "+4", "+5", "+6"],
