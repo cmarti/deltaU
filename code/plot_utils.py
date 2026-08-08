@@ -29,16 +29,19 @@ LINEPLOT_KWARGS = {
 }
 
 GREYS = cm.get_cmap("binary")
+BLUES = cm.get_cmap("Blues")
+REDS = cm.get_cmap("Reds")
+GREENS = cm.get_cmap("Greens")
 
 MODELS_PALETTE = {
-    "MEI": GREYS(0.2),
-    "CN": GREYS(0.45),
-    "VC": GREYS(0.7),
-    "SitesVC": GREYS(0.99),
-    "LER": GREYS(0.85),
-    "Threeway": 'grey',
-    "Pairwise": 'grey',
-    "Additive": 'grey',
+    "MEI": REDS(0.45),
+    "LER": REDS(0.85),
+    "VC": BLUES(0.45),
+    "SitesVC": BLUES(0.85),
+    "CN": GREYS(0.5),
+    "Threeway": GREYS(0.6),
+    "Pairwise": GREYS(0.4),
+    "Additive": GREYS(0.2),
 }
 MODELS_STYLES = {
     "MEI": "-",
@@ -47,8 +50,8 @@ MODELS_STYLES = {
     "LER": "-",
     "SitesVC": "-",
     "Pairwise": "--",
-    "Additive": ":",
-    "Threeway": "-.",
+    "Additive": "--",
+    "Threeway": "--",
 }
 POSITION_LABELS = {
     "smn1": ["-3", "-2", "-1", "+2", "+3", "+4", "+5", "+6"],
@@ -135,16 +138,16 @@ def plot_cv_r2_curves(r2, axes):
         xlim=(0, 1),
         ylim=(0, 1),
     )
-    axes.legend(loc=4, ncol=2)
+    axes.legend(loc=4, ncol=2, fontsize=6)
 
 
-def plot_train_pred_comparison(train, axes, lims, x='f', y='y'):
+def plot_train_pred_comparison(train, axes, lims, x="f", y="y", cmap="Greys_r"):
     bins = np.linspace(lims[0], lims[-1], 100)
     x, y = train[x], train[y]
     sns.histplot(
         x=x,
         y=y,
-        cmap="Greys_r",
+        cmap=cmap,
         ax=axes,
         bins=(bins, bins),
         cbar=True,
@@ -191,18 +194,10 @@ def plot_test_pred_comparison(test, axes, lims):
         markeredgewidth=0,
         markersize=2.5,
         lw=0.5,
-        zorder=1
+        zorder=1,
     )
-    
-    axes.scatter(
-        x,
-        y,
-        color="black",
-        alpha=0.5,
-        s=2,
-        lw=0,
-        zorder=2
-    )
+
+    axes.scatter(x, y, color="black", alpha=0.5, s=2, lw=0, zorder=2)
     axes.set(
         xlim=lims,
         ylim=lims,

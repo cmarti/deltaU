@@ -7,6 +7,7 @@ from gpmap.inference import (
     LocalEpistasisRegression,
     MinimumEpistasisInterpolator,
     SitesVCregression,
+    SitesVCregression,
     VCregression,
 )
 
