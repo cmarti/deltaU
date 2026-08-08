@@ -6,6 +6,7 @@ from gpmap.inference import (
     ConnectednessModelRegression,
     LocalEpistasisRegression,
     MinimumEpistasisInterpolator,
+    SitesVCregression,
     VCregression,
 )
 
@@ -24,16 +25,17 @@ if __name__ == "__main__":
         ),
         "VC": VCregression(seq_length=8, alphabet_type="rna"),
         "CN": ConnectednessModelRegression(seq_length=8, alphabet_type="rna"),
-        "LER": LocalEpistasisRegression(
-            seq_length=8, alphabet_type="rna", P=2
-        ),
+        "LER": LocalEpistasisRegression(seq_length=8, alphabet_type="rna", P=2),
+        "SitesVC": SitesVCregression(seq_length=8, alphabet_type="rna"),
     }
 
     print("Calculating R2 curves")
     results = []
     for p in np.geomspace(0.01, 0.99, 10):
+        print(f"  Training with p={p:2f}")
         n_train = int(p * data.shape[0])
-        for _ in range(3):
+        for split_idx in range(3):
+            print(f"   Split {split_idx}")
             train_idx = np.random.choice(
                 data.index, size=n_train, replace=False
             )
@@ -48,6 +50,7 @@ if __name__ == "__main__":
             X_test, f_test = test.index.values, test.f.values
 
             for label, model in models.items():
+                print(f"    {label} model")
                 model.fit(X=X_train, y=y_train, y_var=y_var_train)
                 y_pred = model.predict()
 

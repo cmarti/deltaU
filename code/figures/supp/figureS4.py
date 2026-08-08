@@ -17,6 +17,7 @@ def plot_function_hist(ndf, vmin, vmax, nodes_hist_axes, c, cmap="viridis"):
     mplot.plot_color_hist(nodes_hist_axes, ndf[c], cmap=cmap, bins=bins)
     nodes_hist_axes.set_ylabel("Frequency", fontsize=7)
 
+
 def style_visualization(axes):
     arrange_axis(
         axes,
@@ -26,7 +27,8 @@ def style_visualization(axes):
         lims=(-2, 4),
         fontsize=7,
         xpos=0.43,
-        ypos=0.41,
+        ypos=0.43,
+        ms=3,
     )
     axes.set(
         xlim=(-2.25, 3.5),
@@ -52,7 +54,9 @@ if __name__ == "__main__":
     edges_df = read_edges(f"results/{dataset_name}.edges.npz")
     mapping = {"A": 0.1, "C": 0.65, "G": 0.33, "U": 0.9}
     for pos in range(8):
-        nodes_df[position_labels[pos]] = [mapping[x[pos]] for x in nodes_df.index]
+        nodes_df[position_labels[pos]] = [
+            mapping[x[pos]] for x in nodes_df.index
+        ]
 
     print("  Computing background-specific allelic effects")
     seqs_array = np.array([[c for c in x] for x in nodes_df.index])
@@ -65,8 +69,10 @@ if __name__ == "__main__":
             label = f"{position_labels[position]}{allele}"
             cols.append(label)
             nodes_df[label] = nodes_df["function"].reindex(seqs).values
+
+        menas = nodes_df[cols].mean(1).values
         for col in cols:
-            nodes_df[col] -= nodes_df[cols].mean(1).values
+            nodes_df[col] -= menas
 
     print("  Plotting visualization")
 
@@ -75,7 +81,6 @@ if __name__ == "__main__":
     print("    Plotting nodes")
     cmap = "coolwarm"
     for p, ax_col in enumerate(subplots):
-        
         print(f"    Coloring by alleles at position {position_labels[p]}")
         axes = ax_col[0]
         mplot.plot_nodes(
@@ -88,19 +93,21 @@ if __name__ == "__main__":
             # sort_by="function",
             # sort_ascending=True,
             color=position_labels[p],
-            cmap='magma',
-            vmin=0, 
+            cmap="magma",
+            vmin=0,
             vmax=1,
             size=1.5,
             cbar=False,
             rasterized=True,
         )
         # Add categorical legend for magma colormap
-        legend_elements = [Patch(facecolor=plt.cm.magma(mapping[allele]), label=allele) 
-                  for allele in "ACGU"]
+        legend_elements = [
+            Patch(facecolor=plt.cm.magma(mapping[allele]), label=allele)
+            for allele in "ACGU"
+        ]
         axes.legend(handles=legend_elements, loc=4)
         style_visualization(axes)
-        
+
         for allele, axes in zip("ACGU", ax_col[1:]):
             label = f"{position_labels[p]}{allele}"
             print(f"      Coloring by {label}")
