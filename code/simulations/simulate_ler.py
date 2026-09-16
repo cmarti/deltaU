@@ -104,10 +104,6 @@ if __name__ == "__main__":
     model = SitesVCregression(seq_length=8, alphabet_type="dna")
 
     print("  Re-scaling variance components for ssVC prior")
-    log_lambda_k = np.linspace(np.log(1e2), np.log(1e-2))
-    print(log_lambda_k)
-    
-    
     lambda_k = np.append(np.array([1, 1]), np.geomspace(1, 10, 7))
     k_factor = np.array([lambda_k[k] for k in lambda_U["k"]])
     lambda_U["lambda_U"] = lambda_U["lambda_U"] * k_factor

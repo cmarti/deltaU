@@ -7,13 +7,12 @@ from gpmap.inference import (
     LocalEpistasisRegression,
     MinimumEpistasisInterpolator,
     SitesVCregression,
-    SitesVCregression,
     VCregression,
 )
 
 if __name__ == "__main__":
     np.random.seed(0)
-    for base_model in ["ssVC"]: #["ler", "ssVC"]:
+    for base_model in ["ler", "ssVC"]:
         print(f"Loading data fronm {base_model} model simulations...")
         data = pd.read_csv(f"data/processed/simulations.{base_model}.csv", index_col=0)
         X, y, y_var = data.index.values, data.y.values, data.y_var.values

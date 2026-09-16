@@ -5,12 +5,14 @@ from scipy.stats import percentileofscore
 
 if __name__ == "__main__":
     dataset_label = 'intron.30C'
+    model_label = 'ssVC'
     wt = 'AGGTACAT'
     mean_functions = [0, 0.4, 0.8, 1.2, 1.6, 1.8]
+    mean_functions = [2.0, 2.2, 2.4]
     print(f"Calculating visualization for {dataset_label} dataset")
     
     print("  Loading inferred landscape...")
-    data = pd.read_csv(f"results/{dataset_label}.ler.landscape.csv", index_col=0)
+    data = pd.read_csv(f"results/{dataset_label}.{model_label}.landscape.csv", index_col=0)
     X, f = data.index.values, data.f.values
     wt_fitness = data.loc[wt, 'f']
     wt_perc = percentileofscore(f, wt_fitness)
@@ -26,7 +28,7 @@ if __name__ == "__main__":
         print(f"    Stationary mean function of {mean_function} ({perc:.2f}% percentile)")
         rw.calc_visualization(mean_function=mean_function, n_components=20)
         rw.write_tables(
-            prefix=f"results/{dataset_label}.ler.map.mf_{mean_function}",
+            prefix=f"results/{dataset_label}.{model_label}.map.mf_{mean_function}",
             nodes_format="pq",
             write_edges=False,
         )

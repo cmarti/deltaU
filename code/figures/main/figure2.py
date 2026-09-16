@@ -86,27 +86,31 @@ if __name__ == "__main__":
     apply_plot_style()
 
     print("Loading data...")
-    prior_a_matrix = pd.read_csv("results/simulations.prior_a.csv", index_col=0)
+    prior_a_matrix = pd.read_csv("results/simulations.ler.prior_a.csv", index_col=0)
     prior_corr = pd.read_csv(
-        "results/simulations.prior_correlations.csv", dtype={"seq": str}
+        "results/simulations.ler.prior_correlations.csv", dtype={"seq": str}
     ).set_index("seq")
 
     obs_corr = pd.read_csv(
-        "results/simulations.corrs.csv", dtype={"seq": str}
+        "results/simulations.ler.corrs.csv", dtype={"seq": str}
     ).set_index("seq")
     inferred_corr = pd.read_csv(
-        "results/simulations.corrs.csv", dtype={"seq": str}
+        "results/simulations.ler.corrs.csv", dtype={"seq": str}
     ).set_index("seq")
     inferred_a_matrix = pd.read_csv(
-        "results/simulations.inferred_interaction_strength.csv", index_col=0
+        "results/simulations.ler.inferred_interaction_strength.csv", index_col=0
     )
 
-    pred = pd.read_csv("results/simulations.pred.csv", index_col=0)
-    train = pd.read_csv(
-        "data/processed/simulations.train.csv", index_col=0
-    ).join(pred, rsuffix="_pred")
-    test = pd.read_csv("results/simulations.test_pred.csv", index_col=0)
-    r2 = pd.read_csv("results/simulations.r2.csv", index_col=0)
+    pred = pd.read_csv("results/simulations.ler.pred.csv", index_col=0)
+    test = pd.read_csv("results/simulations.ler.pred.ler.csv", index_col=0).dropna()
+    ler_r2 = pd.read_csv("results/simulations.ler.r2.csv", index_col=0)
+    r2_true_lambdas = pd.read_csv("results/simulations.ler.true_lambdas.r2.csv", index_col=0)
+    r2_true_lambdas['model'] = 'LER-True'
+    ler_r2 = pd.concat([ler_r2, r2_true_lambdas], axis=0)
+    ssVC_r2 = pd.read_csv("results/simulations.ssVC.r2.csv", index_col=0)
+    r2_true_lambdas = pd.read_csv("results/simulations.ssVC.true_lambdas.r2.csv", index_col=0)
+    r2_true_lambdas['model'] = 'ssVC-True'
+    ssVC_r2 = pd.concat([ssVC_r2, r2_true_lambdas], axis=0)
 
     print("Making figure...")
     fig, subplots = plt.subplots(
@@ -147,15 +151,8 @@ if __name__ == "__main__":
         scale_factor=1e-3,
     )
 
-    print("  Plotting predictions vs true in training sequences")
-    axes = subplots[1, 1]
-    plot_train_pred_comparison(
-        train, axes, lims=(-8, 8), x="f_pred", y="f", cmap="magma"
-    )
-    axes.set(ylabel="True fitness", xlabel="Predicted fitness")
-
     print("  Plotting predictions vs true in held-out sequences")
-    axes = subplots[1, 2]
+    axes = subplots[1, 1]
     plot_test_pred_comparison(test, axes, lims=(-8, 8))
     coverage = np.mean(
         (test["f"] > test["ci_95_lower"]) & (test["f"] < test["ci_95_upper"])
@@ -163,8 +160,12 @@ if __name__ == "__main__":
     print(f"  Coverage of 95% CI: {coverage * 100:.2f}")
 
     print("  Plotting R2 vs training set size for model comparison...")
+    axes = subplots[1, 2]
+    plot_cv_r2_curves(ler_r2, axes)
+
+    print("  Plotting R2 vs training set size for model comparison...")
     axes = subplots[1, 3]
-    plot_cv_r2_curves(r2, axes)
+    plot_cv_r2_curves(ssVC_r2, axes)
 
     print("  Saving figure...")
     fig.tight_layout()

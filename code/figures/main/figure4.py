@@ -5,6 +5,7 @@ from code.plot_utils import (
     apply_plot_style,
     plot_pred_vs_obs_corr,
     plot_test_pred_comparison,
+    plot_cv_r2_curves,
 )
 
 import matplotlib.pyplot as plt
@@ -20,32 +21,36 @@ from gpmap.plot.mpl import (
 if __name__ == "__main__":
     dataset_name = "intron.30C"
     position_labels = POSITION_LABELS[dataset_name]
+    model_label = 'ssVC'
     apply_plot_style()
 
-    print(f"Plotting model fit for {dataset_name} dataset")
+    print(f"Plotting {model_label} model fit for {dataset_name} dataset")
 
+    ##########################################################################
+    
     print("Loading data for plotting")
-    print("  Loading correlation data...")
+    print("  Loading correlation data and LER estimates...")
     nodes_df = pd.read_csv(
-        f"results/{dataset_name}.corrs.csv",
+        f"results/{dataset_name}.ler.corrs.csv",
         dtype={"seq": str},
         index_col="seq",
     )
 
-    print("  Loading a matrix...")
+    print("  Loading a matrix from LER model...")
     a_matrix = pd.read_csv(
         f"results/{dataset_name}.interaction_strength.csv", index_col=0
     )
 
-    print("  Loading predictions in training set...")
+    print(f"  Loading {model_label} predictions complete landscape...")
     landscape = pd.read_csv(
-        f"results/{dataset_name}.ler.landscape.csv", index_col=0
+        f"results/{dataset_name}.{model_label}.landscape.csv", index_col=0
     )
-    train = pd.read_csv(f"data/processed/{dataset_name}.train.csv", index_col=0)
-    train = train.join(landscape)
 
-    print("  Loading predictions in test set...")
-    pred = pd.read_csv(f"results/{dataset_name}.ler.pred.csv", index_col=0)
+    print("  Loading R2 values across...")
+    r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv")
+
+    print(f"  Loading {model_label} predictions in test set...")
+    pred = pd.read_csv(f"results/{dataset_name}.{model_label}.pred.csv", index_col=0)
     data = pd.read_csv(f"data/processed/{dataset_name}.test.csv", index_col=0)
     pred = pred.join(data)
     pred["y_std"] = np.sqrt(pred["y_var"])
@@ -56,17 +61,19 @@ if __name__ == "__main__":
     print(f"    Coverage of 95% CI: {coverage * 100:.2f}")
 
     print("  Loading RMS epistatic coeffcients")
-    rmsec = pd.read_csv(f"results/{dataset_name}.ler.rmsec.csv", index_col=0)
+    rmsec = pd.read_csv(f"results/{dataset_name}.{model_label}.rmsec.csv", index_col=0)
 
     print("  Loading variance explained by interactions of order k for site i")
-    fpath = f"results/{dataset_name}.ler.sites_variance_k.csv"
+    fpath = f"results/{dataset_name}.{model_label}.sites_variance_k.csv"
     sites = pd.read_csv(fpath, index_col=0)
 
     print(
         "  Loading variance explained by interactions of order k=2 and k>2 for pairs of sites"
     )
-    fpath = f"results/{dataset_name}.ler.sites_pairs_variance.csv"
+    fpath = f"results/{dataset_name}.{model_label}.sites_pairs_variance.csv"
     m = pd.read_csv(fpath, index_col=0)
+
+    ##########################################################################
 
     print("Making figure...")
     fig, subplots = plt.subplots(
@@ -95,9 +102,14 @@ if __name__ == "__main__":
         cbar_label="Interaction strength ($1/a_{ij}$)",
     )
 
-    print("  Plotting predictions in held-out sequences")
+    # print("  Plotting predictions in held-out sequences")
+    # axes = subplots[1, 0]
+    # plot_test_pred_comparison(pred, axes, lims=(-8, 6))
+    
+    print("  Plotting R2 vs training set size for model comparison...")
     axes = subplots[1, 0]
-    plot_test_pred_comparison(pred, axes, lims=(-8, 6))
+    plot_cv_r2_curves(r2, axes)
+    axes.set(ylim=(0.2, 0.8))
 
     print("  Plotting variance explained by interactions of order k for site i")
     axes = subplots[1, 1]

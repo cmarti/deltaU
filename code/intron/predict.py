@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from gpmap.inference import LocalEpistasisRegression
+from gpmap.inference import LocalEpistasisRegression, SitesVCregression
 
 if __name__ == "__main__":
     dataset_label = 'intron.30C'
@@ -11,14 +11,17 @@ if __name__ == "__main__":
     data = pd.read_csv(f"data/processed/{dataset_label}.train.csv", index_col=0).dropna()
     X, y, y_var = data.index.values, data["y"].values, data["y_var"].values
 
+    ######################################################################
+    
+    print('Predicting fitness under LER')
     print('  Loading model parameters...')
     fpath = f'results/{dataset_label}.ler.a.npy'
     a_values = np.load(fpath)
-    print(f"    Loaded a_values: {a_values}")
+    print(f"  Loaded a_values: {a_values}")
 
     fpath = f'results/{dataset_label}.ler.lambda_U.npy'
     lambda_U = np.load(fpath)
-    print(f"    Loaded lambda_U: {lambda_U}")
+    print(f"  Loaded lambda_U: {lambda_U}")
 
     print('  Making predictions...')
     model = LocalEpistasisRegression(seq_length=8, alphabet_type="dna", P=2,
@@ -28,4 +31,21 @@ if __name__ == "__main__":
     
     print('  Saving predictions...')
     pred.to_csv(f'results/{dataset_label}.ler.landscape.csv')
+    
+    ######################################################################
+        
+    print('Predicting fitness under ssVC')
+    print('  Loading model parameters...')
+    fpath = f'results/{dataset_label}.ssVC.lambda_U.npy'
+    lambda_U = np.load(fpath)
+    print(f"  Loaded lambda_U: {lambda_U}")
+
+    print('  Making predictions...')
+    model = SitesVCregression(seq_length=8, alphabet_type="dna", lambdas=lambda_U)
+    model.set_data(X, y, y_var=y_var)
+    pred = model.predict()
+    
+    print('  Saving predictions...')
+    pred.to_csv(f'results/{dataset_label}.ssVC.landscape.csv')
+    
     print('Done.')

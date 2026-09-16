@@ -118,6 +118,7 @@ if __name__ == "__main__":
     ###################################
     
     ylim = (5e-3, 8e3)
+    xlim = (8e-7, 5e3)
     axes = subplots[0, 0]
     plot_correlation_U_sites(lambda_U_ler, axes, y="lambda_U")
     axes.set(
@@ -137,7 +138,7 @@ if __name__ == "__main__":
         xticklabels=[],
         yticklabels=[],
         ylim=ylim,
-        xlim=ylim,
+        xlim=xlim,
     )
 
     axes = subplots[2, 0]
@@ -149,7 +150,7 @@ if __name__ == "__main__":
         xticklabels=[],
         yticklabels=[],
         ylim=ylim,
-        xlim=ylim,
+        xlim=xlim,
     )
     
     ###################################
@@ -164,6 +165,7 @@ if __name__ == "__main__":
     )
     
     axes = subplots[1, 1]
+    
     scatter(ssVC_lambda_U_ler_inferred["lambda_U"], lambda_U_ssVC["lambda_U"])
     axes.set(
         yscale="log",
@@ -171,7 +173,7 @@ if __name__ == "__main__":
         xlabel="LER inferred prior $\lambda_U$",
         ylim=ylim,
         yticklabels=[],
-        # xlim=ylim,
+        xlim=xlim,
     )
 
     axes = subplots[2, 1]
@@ -182,12 +184,12 @@ if __name__ == "__main__":
         xlabel="ssVC inferred prior $\lambda_U$",
         ylim=ylim,
         yticklabels=[],
-        # xlim=ylim,
+        xlim=xlim,
     )
 
     print("  Saving figure...")
     fig.tight_layout()
-    # fig.subplots_adjust(left=0.10, right=0.98, top=0.98, bottom=0.10)
+    fig.subplots_adjust(left=0.1, right=0.98, top=0.96, bottom=0.12)
     # add_panel_labels(subplots, ["A", "B", "C", "D"], x_offset=-0.22)
     fig.savefig("figures/figure_ssVC_prior.png", dpi=300)
     fig.savefig("figures/figure_ssVC_prior.svg", dpi=300)

@@ -1,11 +1,11 @@
 import numpy as np
 import pandas as pd
-from gpmap.inference import LocalEpistasisRegression
+from gpmap.inference import LocalEpistasisRegression, SitesVCregression
 
 if __name__ == "__main__":
     dataset_label = "intron.30C"
 
-    print(f"Fitting Local Epistasis Regression model to {dataset_label} data")
+    print(f"Fitting ssVC model to {dataset_label} data")
     position_labels = np.array([2, 3, 4, 5, 18, 19, 20, 21])
     data = pd.read_csv(
         f"data/processed/{dataset_label}.train.csv", index_col=0
@@ -13,6 +13,8 @@ if __name__ == "__main__":
     X, y, y_var = (data.index.values, data["y"].values, data["y_var"].values)
     seq_length = len(X[0])
     print(f"  Loaded {X.shape[0]} training sequences")
+
+    #####################################################################
 
     print("  Learning interaction strenghts a_ij")
     model = LocalEpistasisRegression(
@@ -46,5 +48,19 @@ if __name__ == "__main__":
     print("  Saving predicted and observed distance-correlation function")
     corrs_df = model.get_empirical_pred_correlations_df()
     corrs_df["seq"] = corrs_df.index
-    corrs_df.to_csv(f"results/{dataset_label}.corrs.csv", index=False)
+    corrs_df.to_csv(f"results/{dataset_label}.ler.corrs.csv", index=False)
+    
+    #####################################################################
+    
+    print("  Learning lambda_U values under the ssVC model")
+    model = SitesVCregression(
+        seq_length=seq_length, alphabet_type="dna"
+    )
+    model.fit(X, y, y_var=y_var)
+
+    print("  Saving lambda_U")
+    fpath = f"results/{dataset_label}.ssVC.lambda_U.npy"
+    np.save(fpath, model.lambdas)
+
     print("Done.")
+    

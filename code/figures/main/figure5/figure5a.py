@@ -21,13 +21,13 @@ if __name__ == "__main__":
     apply_plot_style()
     dataset_name = "intron.30C"
     position_labels = POSITION_LABELS[dataset_name]
-    mf = 1.6
+    mf = 1.8
     x, y, z = "1", "2", "3"
     print(f"Plotting visualization for {dataset_name} dataset")
 
     print("  Loading input data")
     nodes_df = pd.read_parquet(
-        f"results/{dataset_name}.ler.map.mf_{mf}.nodes.pq"
+        f"results/{dataset_name}.ssVC.map.mf_{mf}.nodes.pq"
     )
     nodes_df.index = [x.replace("T", "U") for x in nodes_df.index]
     edges_df = read_edges(f"results/{dataset_name}.edges.npz")
@@ -39,9 +39,9 @@ if __name__ == "__main__":
     fig = dplot.dsg_to_fig(dsg)
     axes = fig.axes[0]
 
-    legendx, legendy = -0.05, 0.25
-    nodes_hist_axes = axes.inset_axes((legendx, legendy - 0.125, 0.25, 0.1))
-    nodes_cbar_axes = axes.inset_axes((legendx, legendy - 0.15, 0.25, 0.02))
+    legendx, legendy = 0.0, 0.25
+    nodes_hist_axes = axes.inset_axes((legendx, legendy - 0.125, 0.2, 0.1))
+    nodes_cbar_axes = axes.inset_axes((legendx, legendy - 0.15, 0.2, 0.02))
 
     vmin, vmax = -5, 4
     mplot.plot_nodes(
@@ -71,16 +71,19 @@ if __name__ == "__main__":
         axes,
         x=x,
         y=y,
-        ticks=np.arange(-2, 4),
+        ticks=np.arange(-2, 3),
         lims=(-2, 4),
         fontsize=7,
-        xpos=0.43,
-        ypos=0.41,
+        xpos=0.465,
+        ypos=0.415,
+        ms=2,
     )
 
     axes.set(
-        xlim=(-2.25, 3.5),
-        ylim=(-2.25, 3.25),
+        xticks=np.arange(-2, 4),
+        yticks=np.arange(-1, 4),
+        xlim=(-2.1, 3.25),
+        ylim=(-1.9, 2.35),
         aspect="equal",
     )
     axes.margins(0.1)

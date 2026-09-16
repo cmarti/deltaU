@@ -6,13 +6,14 @@ from gpmap.summary import GPmapSummarizer
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
+    model_label = "ssVC"
     positions_labels = POSITION_LABELS[dataset_name]
     positions = np.arange(len(positions_labels))
     print("Calculating variance components for MAP estimate")
 
     print("  Loading MAP estimate..")
     data = pd.read_csv(
-        f"results/{dataset_name}.ler.landscape.csv", index_col=0
+        f"results/{dataset_name}.{model_label}.landscape.csv", index_col=0
     )
 
     print("  Calculating summary statistics")
@@ -43,17 +44,17 @@ if __name__ == "__main__":
     
     print("Saving MAP variance components")
     print("  Variance explained by interactions of order k")
-    fpath = f"results/{dataset_name}.ler.variance_k.csv"
+    fpath = f"results/{dataset_name}.{model_label}.variance_k.csv"
     v_k_vcs.to_csv(fpath)
     
     print("  Variance explained by interactions of order k for site i")
-    fpath = f"results/{dataset_name}.ler.sites_variance_k.csv"
+    fpath = f"results/{dataset_name}.{model_label}.sites_variance_k.csv"
     sites.iloc[::-1, :].to_csv(fpath)
 
     print(
         "  Variance explained by interactions of order k=2 and k>2 for pairs of sites"
     )
-    fpath = f"results/{dataset_name}.ler.sites_pairs_variance.csv"
+    fpath = f"results/{dataset_name}.{model_label}.sites_pairs_variance.csv"
     m.to_csv(fpath)
     
     print("Saving RMS epistatic coefficients")
@@ -64,6 +65,6 @@ if __name__ == "__main__":
     m = m + m.T
     m.index = positions_labels
     m.columns = positions_labels
-    fpath = f"results/{dataset_name}.ler.rmsec.csv"
+    fpath = f"results/{dataset_name}.{model_label}.rmsec.csv"
     m.to_csv(fpath)
     print("Done.")

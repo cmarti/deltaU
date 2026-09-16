@@ -27,13 +27,14 @@ def calc_mut_eff(f, i, a1, a2):
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
+    model_label = "ssVC"
     positions_labels = POSITION_LABELS[dataset_name]
     positions = np.arange(len(positions_labels))
     print("Calculating variance components for MAP estimate")
 
     print("  Loading MAP estimate..")
     data = pd.read_csv(
-        f"results/{dataset_name}.ler.landscape.csv", index_col=0
+        f"results/{dataset_name}.{model_label}.landscape.csv", index_col=0
     ).drop_duplicates()
     data.index = [x.replace("T", "U") for x in data.index]
     f = data["f"].to_dict()
@@ -48,5 +49,5 @@ if __name__ == "__main__":
             mut_effs[label] = calc_mut_eff(f, i, a1, a2)
 
     mut_effs = pd.DataFrame(mut_effs)
-    mut_effs.to_csv(f"results/{dataset_name}.mut_effs.csv")
+    mut_effs.to_csv(f"results/{dataset_name}.{model_label}.mut_effs.csv")
     print("Done.")

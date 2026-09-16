@@ -36,8 +36,10 @@ GREENS = cm.get_cmap("Greens")
 MODELS_PALETTE = {
     "MEI": REDS(0.45),
     "LER": REDS(0.85),
+    "LER-True": REDS(0.85),
     "VC": BLUES(0.45),
-    "SitesVC": BLUES(0.85),
+    "ssVC": BLUES(0.85),
+    "ssVC-True": BLUES(0.85),
     "CN": GREYS(0.5),
     "Threeway": GREYS(0.6),
     "Pairwise": GREYS(0.4),
@@ -48,7 +50,10 @@ MODELS_STYLES = {
     "CN": "-",
     "VC": "-",
     "LER": "-",
+    "LER-True": "--",
     "SitesVC": "-",
+    "ssVC-True": "--",
+    "ssVC": "-",
     "Pairwise": "--",
     "Additive": "--",
     "Threeway": "--",
@@ -141,7 +146,9 @@ def plot_cv_r2_curves(r2, axes):
     axes.legend(loc=4, ncol=2, fontsize=6)
 
 
-def plot_train_pred_comparison(train, axes, lims, x="f", y="y", cmap="Greys_r"):
+def plot_train_pred_comparison(
+    train, axes, lims, x="f", y="y", cmap="Greys_r"
+):
     bins = np.linspace(lims[0], lims[-1], 100)
     x, y = train[x], train[y]
     sns.histplot(
@@ -218,7 +225,16 @@ def plot_test_pred_comparison(test, axes, lims):
 
 
 def arrange_axis(
-    axes, x, y, ticks, lims, fontsize=8, xpos=0.52, ypos=0.52, ms=5
+    axes,
+    x,
+    y,
+    ticks,
+    lims,
+    fontsize=8,
+    xpos=0.52,
+    ypos=0.52,
+    ms=5,
+    lw=0.75,
 ):
     axes.set(aspect="equal", xlabel="", ylabel="")
     axes.spines["left"].set(position=("data", 0), zorder=0, alpha=0.5)
@@ -230,9 +246,10 @@ def arrange_axis(
         ls="",
         marker=">",
         ms=ms,
-        color="k",
+        color="black",
         transform=axes.get_yaxis_transform(),
         clip_on=False,
+        lw=lw,
     )
     axes.plot(
         (0),
@@ -240,9 +257,10 @@ def arrange_axis(
         ls="",
         marker="^",
         ms=ms,
-        color="k",
+        color="black",
         transform=axes.get_xaxis_transform(),
         clip_on=False,
+        lw=lw,
     )
     axes.text(
         1.02,

@@ -19,6 +19,8 @@ def plot_function_hist(ndf, vmin, vmax, nodes_hist_axes, c):
 if __name__ == "__main__":
     apply_plot_style()
     dataset_name = "intron.30C"
+    model_label = 'ssVC'
+    
     x, y, z = "1", "2", "3"
     mean_functions = [0, 0.4, 0.8, 1.2, 1.6, 1.8]
     print(f"Plotting visualization for {dataset_name} dataset")
@@ -30,7 +32,7 @@ if __name__ == "__main__":
     nodes_dfs = {}
     for mf in mean_functions:
         nodes_df = pd.read_parquet(
-            f"results/{dataset_name}.ler.map.mf_{mf}.nodes.pq"
+            f"results/{dataset_name}.{model_label}.map.mf_{mf}.nodes.pq"
         )
         nodes_dfs[mf] = nodes_df
     nodes_dfs[0]['2'] = -nodes_dfs[0]['2']

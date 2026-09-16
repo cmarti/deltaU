@@ -1,97 +1,60 @@
 from code.plot_utils import POSITION_LABELS
+from itertools import combinations, product
 
 import numpy as np
 import pandas as pd
 
 
-def calc_mut_coeff(f, mut, positions_labels):
-    seqs = f.index.values
-    a1, pos, a2 = mut[0], int(mut[1:-1]), mut[-1]
-    seqs_array = np.array([[c for c in x] for x in seqs])
-
-    alleles = seqs_array.copy()
-    alleles[:, pos] = a1
-    s1 = np.array(["".join(x) for x in alleles])
-
-    alleles = seqs_array.copy()
-    alleles[:, pos] = a2
-    s2 = np.array(["".join(x) for x in alleles])
-
-    mut_eff = f.reindex(s2).values - f.reindex(s1).values
-    label = f"{a1}{positions_labels[pos]}{a2}"
-    return label, mut_eff
+def get_seqs_with_mutations(
+    positions, alleles, seq_length, alphabet=list("ACGU")
+):
+    alphabets = [alphabet] * seq_length
+    for p, allele in zip(positions, alleles):
+        alphabets[p] = [allele]
+    seqs = np.array([["".join(x) for x in product(*alphabets)]])
+    return seqs
 
 
-def calc_epistatic_coeff(f, mut1, mut2, positions_labels):
-    seqs = f.index.values
-    a11, pos1, a12 = mut1[0], int(mut1[1:-1]), mut1[-1]
-    a21, pos2, a22 = mut2[0], int(mut2[1:-1]), mut2[-1]
-    seqs_array = np.array([[c for c in x] for x in seqs])
+def calc_epistatic_coeff(f, i, j, a_i_1, a_i_2, a_j_1, a_j_2):
+    s00 = get_seqs_with_mutations([i, j], [a_i_1, a_j_1], 8)
+    s01 = get_seqs_with_mutations([i, j], [a_i_1, a_j_2], 8)
+    s10 = get_seqs_with_mutations([i, j], [a_i_2, a_j_1], 8)
+    s11 = get_seqs_with_mutations([i, j], [a_i_2, a_j_2], 8)
 
-    alleles = seqs_array.copy()
-    alleles[:, pos1] = a11
-    alleles[:, pos2] = a21
-    s11 = np.array(["".join(x) for x in alleles])
+    f00 = np.array([f[x] for x in s00[0]])
+    f01 = np.array([f[x] for x in s01[0]])
+    f10 = np.array([f[x] for x in s10[0]])
+    f11 = np.array([f[x] for x in s11[0]])
 
-    alleles = seqs_array.copy()
-    alleles[:, pos1] = a11
-    alleles[:, pos2] = a22
-    s12 = np.array(["".join(x) for x in alleles])
-
-    alleles = seqs_array.copy()
-    alleles[:, pos1] = a12
-    alleles[:, pos2] = a21
-    s21 = np.array(["".join(x) for x in alleles])
-
-    alleles = seqs_array.copy()
-    alleles[:, pos1] = a12
-    alleles[:, pos2] = a22
-    s22 = np.array(["".join(x) for x in alleles])
-
-    epistatic_coeffs = (
-        f.reindex(s22).values
-        + f.reindex(s11).values
-        - f.reindex(s12).values
-        - f.reindex(s21).values
-    )
-    label = (
-        f"{a11}{positions_labels[pos1]}{a12}_{a21}{positions_labels[pos2]}{a22}"
-    )
-    return label, epistatic_coeffs
+    return f00 + f11 - f01 - f10
 
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
+    model_label = "ssVC"
     positions_labels = POSITION_LABELS[dataset_name]
     positions = np.arange(len(positions_labels))
     print("Calculating variance components for MAP estimate")
 
     print("  Loading MAP estimate..")
     data = pd.read_csv(
-        f"results/{dataset_name}.ler.landscape.csv", index_col=0
+        f"results/{dataset_name}.{model_label}.landscape.csv", index_col=0
     ).drop_duplicates()
     data.index = [x.replace("T", "U") for x in data.index]
-
-    results = {}
-    print("  Calculating mutational effects")
-    mutations = ["G0C",'C7G']
-    for mut in mutations:
-        print(f"    For mutation {mut}")
-        label, values = calc_mut_coeff(data["f"], mut, positions_labels)
-        results[label] = values
+    f = data["f"].to_dict()
 
     print("  Calculating epistatic coefficients")
-    mutation_pairs = [["G1C", "C6G"], ["A1U", "U6A"]]
-    for mut1, mut2 in mutation_pairs:
-        print(f"    For mutations {mut1}-{mut2}")
-        label, values = calc_epistatic_coeff(
-            data["f"], mut1, mut2, positions_labels
-        )
-        results[label] = values
-    results = pd.DataFrame(results, index=data.index)
-    print(results)
-
-    print("Saving computed mutational effects and epistatic coefficients")
-    results.to_csv(f"results/{dataset_name}.ler.epistatic_coefficients.csv")
-
+    mutations = list(combinations("ACGU", 2))
+    epistatic_coeffs = {}
+    for i, j in combinations(positions, 2):
+        print("    Between positions", i, j)
+        for (a_i_1, a_i_2), (a_j_1, a_j_2) in product(mutations, repeat=2):
+            label = f"{a_i_1}{positions_labels[i]}{a_i_2}_{a_j_1}{positions_labels[j]}{a_j_2}"
+            epistatic_coeffs[label] = calc_epistatic_coeff(
+                f, i, j, a_i_1, a_i_2, a_j_1, a_j_2
+            )
+    epistatic_coeffs = pd.DataFrame(epistatic_coeffs)
+    epistatic_coeffs.to_csv(
+        f"results/{dataset_name}.{model_label}.epistatic_coeffs.csv"
+    )
     print("Done.")
