@@ -1,110 +1,173 @@
 from code.plot_utils import (
+    FIG_WIDTH,
+    POSITION_LABELS,
+    add_panel_labels,
     apply_plot_style,
-    arrange_axis,
 )
 
-import gpmap.plot.ds as dplot
-import gpmap.plot.mpl as mplot
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from gpmap.utils import read_edges
+import seaborn as sns
 
 
-def plot_function_hist(ndf, vmin, vmax, nodes_hist_axes, c):
-    bins = np.linspace(vmin, vmax, 30)
-    mplot.plot_color_hist(nodes_hist_axes, ndf[c], cmap="viridis", bins=bins)
-    nodes_hist_axes.set_ylabel("Frequency", fontsize=7)
+def plot_gamma_i_to_j(
+    gamma_i_to_j, position_labels, axes, values="gamma", cmap="Blues_r"
+):
+
+    if values == "gamma":
+        gamma_label = r"$\gamma_{i \to j}$"
+    elif values == "correlation":
+        gamma_label = r"$\widetilde\gamma_{i \to j}$"
+    else:
+        raise ValueError(f"Invalid values argument: {values}")
+
+    m = pd.pivot_table(
+        gamma_i_to_j, index="site_i", columns="site_j", values=values
+    )
+    sns.heatmap(
+        m,
+        ax=axes,
+        cmap=cmap,
+        vmin=0,
+        vmax=1,
+        square=True,
+        cbar_kws={"label": gamma_label, "shrink": 0.7},
+    )
+    axes.set(
+        xticks=np.arange(len(position_labels)) + 0.5,
+        yticks=np.arange(len(position_labels)) + 0.5,
+        xticklabels=position_labels,
+        yticklabels=position_labels,
+        xlabel="Site $j$",
+        ylabel="Site $i$",
+    )
+
+
+def plot_gamma_D_pairs(
+    gamma_UD, position_labels, axes, D, values="gamma_UD", cmap="Blues_r"
+):
+    if values == "gamma_UD":
+        gamma_label = r"$\gamma_{\{i,j\}}$"
+    elif values == "cor_UD":
+        gamma_label = r"$\widetilde\gamma_{\{i,j\}}$"
+    else:
+        raise ValueError(f"Invalid values argument: {values}")
+
+    D_label = ",".join([str(i) for i in D])
+    S_not_D = [i for i in position_labels if i not in D]
+    gamma_U_D = gamma_UD.loc[gamma_UD["D"].astype(str) == D_label, :].copy()
+    gamma_U_D["i"] = [int(d.split(",")[0]) for d in gamma_U_D["U"]]
+    gamma_U_D["j"] = [int(d.split(",")[1]) for d in gamma_U_D["U"]]
+    m = (
+        pd.pivot_table(gamma_U_D, index="i", columns="j", values=values)
+        .reindex(S_not_D)
+        .T.reindex(S_not_D)
+        .T.fillna(0)
+    )
+    m = m + m.T
+    np.fill_diagonal(m.values, np.nan)
+
+    sns.heatmap(
+        m,
+        ax=axes,
+        cmap=cmap,
+        vmin=0,
+        vmax=1,
+        square=True,
+        cbar_kws={
+            "label": gamma_label + "({" + D_label + "})",
+            "shrink": 0.8,
+        },
+    )
+    axes.set(
+        ylabel="Site $i$",
+        xlabel="Site $j$",
+    )
 
 
 if __name__ == "__main__":
-    apply_plot_style()
     dataset_name = "intron.30C"
-    model_label = 'ssVC'
-    
-    x, y, z = "1", "2", "3"
-    mean_functions = [0, 0.4, 0.8, 1.2, 1.6, 1.8]
-    print(f"Plotting visualization for {dataset_name} dataset")
+    position_labels = POSITION_LABELS[dataset_name]
+    model_label = "ssVC"
+    apply_plot_style()
 
-    print("  Loading edges")
-    edges_df = read_edges(f"results/{dataset_name}.edges.npz")
-    
-    print("  Loading visualization coordinates under different mean functions")
-    nodes_dfs = {}
-    for mf in mean_functions:
-        nodes_df = pd.read_parquet(
-            f"results/{dataset_name}.{model_label}.map.mf_{mf}.nodes.pq"
-        )
-        nodes_dfs[mf] = nodes_df
-    nodes_dfs[0]['2'] = -nodes_dfs[0]['2']
-    
-    print("  Plotting edges")
-    dsg = None
-    for mf, nodes_df in nodes_dfs.items():
-        print(f"    For visualization under a mean function of {mf}")
-        if dsg is None:
-            dsg = dplot.plot_edges(
-                nodes_df, edges_df=edges_df, resolution=800, x=x, y=y
-            )
-        else:
-            dsg = dsg + dplot.plot_edges(
-                nodes_df, edges_df=edges_df, resolution=800, x=x, y=y
-            )
-    print('  Rendering edges')
-    fig = dplot.dsg_to_fig(dsg.cols(3))
-    # fig.set_size_inches((FIG_WIDTH, FIG_WIDTH * 0.66))
-    
-    print("  Plotting nodes")
-    for axes, (mf, nodes_df) in zip(fig.axes, nodes_dfs.items()):
-        print(f"    For visualization under a mean function of {mf}")
-        legendx, legendy = -0.05, 0.25
-        nodes_hist_axes = axes.inset_axes((legendx, legendy - 0.125, 0.25, 0.1))
-        nodes_cbar_axes = axes.inset_axes((legendx, legendy - 0.15, 0.25, 0.02))
+    print(f"Plotting gamma statistics for {model_label} model fit for {dataset_name} dataset")
 
-        vmin, vmax = -5, 4
-        mplot.plot_nodes(
-            axes,
-            nodes_df,
-            x=str(x),
-            y=str(y),
-            sort_by=str(z),
-            sort_ascending=False,
-            size=1.5,
-            vmin=vmin,
-            vmax=vmax,
-            cmap="viridis",
-            cbar_axes=nodes_cbar_axes,
-            cbar_orientation="horizontal",
-            cbar_label="Fitness",
-            rasterized=True,
-        )
-        plot_function_hist(nodes_df, vmin, vmax, nodes_hist_axes, c="function")
-        nodes_hist_axes.set_facecolor("none")
-        nodes_cbar_axes.set(xticks=[-4, -2, 0, 2, 4])
-        nodes_cbar_axes.set_xticklabels([-4, -2, 0, 2, 4], fontsize=6)
-        nodes_cbar_axes.set_xlabel("Fitness", fontsize=7)
+    ##########################################################################
 
-        arrange_axis(
-            axes,
-            x=x,
-            y=y,
-            ticks=np.arange(-2, 4),
-            lims=(-2, 4),
-            fontsize=7,
-            xpos=0.43,
-            ypos=0.41,
-        )
+    print("  Loading data for plotting")
+    fpath = f"results/{dataset_name}.{model_label}.gamma_i_to_j.csv"
+    gamma_i_to_j = pd.read_csv(fpath, index_col=0)
 
-        axes.set(
-            xlim=(-2.25, 3.5),
-            ylim=(-2.25, 3.25),
-            aspect="equal",
-            title=f'Mean fitness = {mf:.1f}'
-        )
-        axes.margins(0.1)
+    fpath = f"results/{dataset_name}.{model_label}.gamma_i_to_jk.csv"
+    gamma_i_to_jk = pd.read_csv(fpath, index_col=0)
+
+    print("  Loading gamma_UD statistics for pairs of sites")
+    fpath = f"results/{dataset_name}.{model_label}.gamma_UD_pairs.csv"
+    gamma_UDs = pd.read_csv(fpath, index_col=0)
+
+    ##########################################################################
+
+    print("  Making figure...")
+    fig, subplots = plt.subplots(
+        2, 4, figsize=(1.12 * FIG_WIDTH, FIG_WIDTH * 0.425)
+    )
+
+    axes = subplots[0, 0]
+    plot_gamma_i_to_j(gamma_i_to_j, position_labels, axes)
+
+    axes = subplots[1, 0]
+    plot_gamma_i_to_j(
+        gamma_i_to_j,
+        position_labels,
+        axes,
+        values="correlation",
+    )
+
+    axes = subplots[0, 1]
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[5], values="gamma_UD"
+    )
+
+    axes = subplots[1, 1]
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[5], values="cor_UD"
+    )
+
+    axes = subplots[0, 2]
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[21], values="gamma_UD"
+    )
+
+    axes = subplots[1, 2]
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[21], values="cor_UD"
+    )
+
+    axes = subplots[0, 3]
+    plot_gamma_D_pairs(
+        gamma_UDs, position_labels, axes, D=[2, 21], values="gamma_UD"
+    )
+
+    axes = subplots[1, 3]
+    plot_gamma_D_pairs(
+        gamma_UDs, position_labels, axes, D=[2, 21], values="cor_UD"
+    )
+
+    sns.despine(top=False, right=False)
 
     print("  Saving figure...")
-    fig.tight_layout()
-    fname = "figures/figureS3"
-    fig.savefig(f"{fname}.png", dpi=300)
-    fig.savefig(f"{fname}.svg", dpi=300)
+    fig.subplots_adjust(
+        wspace=0.5, hspace=0.4, left=0.05, right=0.95, bottom=0.125, top=0.95
+    )
+    add_panel_labels(
+        subplots.flatten(),
+        labels=["A", "B", "C", "D", "E", "F", "G", "H"],
+        x_offset=-0.22,
+        y_offset=1.075,
+    )
+    fig.savefig("figures/figureS3.png", dpi=300)
+    fig.savefig("figures/figureS3.svg", dpi=300)
+
     print("Done.")

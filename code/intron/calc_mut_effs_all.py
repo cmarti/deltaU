@@ -22,6 +22,7 @@ def calc_mut_eff(f, i, a1, a2):
 
     f0 = np.array([f[x] for x in s0[0]])
     f1 = np.array([f[x] for x in s1[0]])
+    
     return f1 - f0
 
 

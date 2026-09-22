@@ -7,12 +7,13 @@ import pandas as pd
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
+    model_label = "ssVC"
     positions_labels = POSITION_LABELS[dataset_name]
     positions = np.arange(len(positions_labels))
 
-    mut_effs = pd.read_csv(f"results/{dataset_name}.mut_effs.csv", index_col=0)
+    mut_effs = pd.read_csv(f"results/{dataset_name}.{model_label}.mut_effs.csv", index_col=0)
     epistatic_coeffs = pd.read_csv(
-        f"results/{dataset_name}.epistatic_coeffs.csv", index_col=0
+        f"results/{dataset_name}.{model_label}.epistatic_coeffs.csv", index_col=0
     )
     apply_plot_style()
 
@@ -112,7 +113,8 @@ if __name__ == "__main__":
         )
         label = f"U={{{positions_labels[i]}, {positions_labels[j]}}}\n"
         label += (
-            r"$\operatorname{Var}[\epsilon_U]$" + f" = {np.mean(values**2):.2f}"
+            r"$\operatorname{Var}[\epsilon_U]$"
+            + f" = {np.mean(values**2):.2f}"
         )
         axes.text(
             0.95,
@@ -137,9 +139,6 @@ if __name__ == "__main__":
     fig.subplots_adjust(
         left=0.025, right=0.975, bottom=0.08, top=0.985, wspace=0.1, hspace=0.1
     )
-    fig.savefig(
-        f"figures/{dataset_name}.ler.epistatic_coeffs.all.png",
-        dpi=300,
-    )
+    fig.savefig("figures/figureS5.png", dpi=300)
 
     print("Done.")

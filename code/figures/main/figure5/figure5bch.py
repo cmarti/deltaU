@@ -11,7 +11,7 @@ if __name__ == "__main__":
 
     print("  Loading contrasts results...")
     contrasts = pd.read_csv(
-        f"results/{dataset_name}.ler.contrasts.csv", index_col=0
+        f"results/{dataset_name}.ssVC.contrasts.csv", index_col=0
     )
 
     print("  Plotting interactions between positions 2 and 21")

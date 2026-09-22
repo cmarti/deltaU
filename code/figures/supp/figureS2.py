@@ -2,74 +2,63 @@ from code.plot_utils import (
     FIG_WIDTH,
     POSITION_LABELS,
     add_panel_labels,
-    add_r2_label,
     apply_plot_style,
     plot_cv_r2_curves,
-    plot_train_pred_comparison,
+    plot_pred_vs_obs_corr,
 )
 
 import matplotlib.pyplot as plt
 import pandas as pd
-from scipy.stats import pearsonr
+from gpmap.plot.mpl import plot_correlation_U_sites, plot_interaction_matrix
 
 if __name__ == "__main__":
-    dataset_name = "intron.30C"
-    position_labels = POSITION_LABELS[dataset_name]
+    dataset_names = ["gb1", "fyn-sh3"]
     apply_plot_style()
 
-    print(f"Plotting model fit for {dataset_name} dataset")
-
-    print("  Loading R2 curves data")
-    r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv", index_col=0)
-
-    print("  Loading models predictions...")
-    data = pd.read_csv(
-        f"results/{dataset_name}.models_predictions.csv", index_col=0
+    print("Making figure...")
+    fig, subplots = plt.subplots(
+        2, 4, figsize=(1.2 *FIG_WIDTH, 0.475 * FIG_WIDTH)
     )
 
-    print("  Plotting cross-validation curves")
-    fig, subplots = plt.subplots(1, 3, figsize=(0.95*FIG_WIDTH, FIG_WIDTH * 0.275))
+    for dataset_name, ax_row in zip(dataset_names, subplots):
+        print(f"Loading data for {dataset_name}...")
+        a_matrix = pd.read_csv(
+            f"results/{dataset_name}.inferred_interaction_strength.csv",
+            index_col=0,
+        )
+        inferred_corr = pd.read_csv(
+            f"results/{dataset_name}.corrs.csv", dtype={"seq": str}
+        ).set_index("seq")
+        r2 = pd.read_csv(f"results/{dataset_name}.r2_curves.csv")
 
-    axes = subplots[0]
-    plot_cv_r2_curves(r2, axes)
-    axes.set(ylim=(0.2, 0.8))
+        print("  Plotting empirical correlation landscape...")
+        axes = ax_row[0]
+        plot_correlation_U_sites(inferred_corr, axes, y="emp_cor")
+        axes.set(ylabel="Observed correlation", xlabel='Hamming distance')
+        
+        print("  Plotting prior vs inferred correlation landscape...")
+        axes = ax_row[1]
+        plot_pred_vs_obs_corr(inferred_corr, axes)
 
-    print("  Plotting model comparisons in full landscape")
-    axes = subplots[1]
-    plot_train_pred_comparison(data, axes, lims=(-8, 6), x="LER", y="VC")
-    axes.set(xlabel="LER predictions", ylabel="VC predictions", aspect="equal")
-    r2 = pearsonr(data["LER"], data["VC"])[0] ** 2
-    add_r2_label(axes, r2)
-
-    print("  Plotting model comparisons in held-out data")
-    axes = subplots[2]
-    test = pd.read_csv(f"data/processed/{dataset_name}.test.csv", index_col=0)
-    data = data.loc[test.index, :]
-    axes.scatter(data["LER"], data["VC"], alpha=0.5, s=3, c="black", lw=0)
-    axes.axline((0, 0), (1, 1), color="gray", ls="--", lw=0.75)
-    axes.set(
-        xlabel="LER predictions",
-        ylabel="VC predictions",
-        aspect="equal",
-        xlim=(-4.5, 3.5),
-        ylim=(-4.5, 3.5),
-    )
-    r2 = pearsonr(data["LER"], data["VC"])[0] ** 2
-    add_r2_label(axes, r2)
-    axes.text(
-        0.95,
-        0.05,
-        "Test data",
-        transform=axes.transAxes,
-        ha="right",
-        va="bottom",
-        fontsize=6,
-    )
-
-    add_panel_labels(subplots, ["A", "B", "C"], x_offset=-0.22)
+        print("  Plotting prior a matrix...")
+        axes = ax_row[2]
+        plot_interaction_matrix(
+            a_matrix,
+            axes,
+            vmax=None,
+            position_labels=POSITION_LABELS[dataset_name],
+            cbar_label='Interaction strength ($1/a_{ij}$)'
+        )
+        print("  Plotting R2 vs training set size for model comparison...")
+        axes = ax_row[3]
+        plot_cv_r2_curves(r2, axes)
+        axes.set(ylim=(0.3, 1.))
 
     print("  Saving figure...")
     fig.tight_layout()
+    fig.subplots_adjust(left=0.075, right=0.985, bottom=0.1, top=0.95)
+    add_panel_labels(subplots, ["A", "B", "C", "D", "E", "F", "G", "H"],
+                     x_offset=-0.22)
     fig.savefig("figures/figureS2.png", dpi=300)
     fig.savefig("figures/figureS2.svg", dpi=300)
     print("Done.")

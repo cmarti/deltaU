@@ -14,9 +14,18 @@ if __name__ == "__main__":
     np.random.seed(0)
     for base_model in ["ler", "ssVC"]:
         print(f"Loading data fronm {base_model} model simulations...")
-        data = pd.read_csv(f"data/processed/simulations.{base_model}.csv", index_col=0)
+        data = pd.read_csv(
+            f"data/processed/simulations.{base_model}.csv", index_col=0
+        )
         X, y, y_var = data.index.values, data.y.values, data.y_var.values
 
+        print("Loading true lambda_U values used for simulations...")
+        lambda_U_true = pd.read_csv(
+            f"results/simulations.{base_model}.lambda_U.csv"
+        )
+        true_model_label = "ssVC-True" if base_model == "ssVC" else "LER-True   "
+
+        print("Defining models to evaluate")
         models = {
             "Additive": TruncatedModel(genotypes=X, max_k=1),
             "Pairwise": TruncatedModel(genotypes=X, max_k=2),
@@ -25,17 +34,24 @@ if __name__ == "__main__":
                 seq_length=8, alphabet_type="rna", P=2
             ),
             "VC": VCregression(seq_length=8, alphabet_type="rna"),
-            "CN": ConnectednessModelRegression(seq_length=8, alphabet_type="rna"),
+            "CN": ConnectednessModelRegression(
+                seq_length=8, alphabet_type="rna"
+            ),
             "LER": LocalEpistasisRegression(
                 seq_length=8, alphabet_type="rna", P=2
             ),
             "ssVC": SitesVCregression(seq_length=8, alphabet_type="rna"),
+            true_model_label: SitesVCregression(
+                seq_length=8,
+                alphabet_type="rna",
+                lambdas=lambda_U_true["lambda_U"].values,
+            ),
         }
 
         print("Calculating R2 curves")
         results = []
         for p in np.geomspace(0.01, 0.99, 10):
-            print(f"  Using {p*100:.1f}% of data for training...")
+            print(f"  Using {p * 100:.1f}% of data for training...")
             n_train = int(p * data.shape[0])
             for _ in range(3):
                 train_idx = np.random.choice(
@@ -60,7 +76,13 @@ if __name__ == "__main__":
                     f_test_pred = y_pred.loc[X_test, "f"].values
 
                     record = evaluate_predictions(
-                        y_pred, X_train, X_test, y_train, f_test, label=label, p=p
+                        y_pred,
+                        X_train,
+                        X_test,
+                        y_train,
+                        f_test,
+                        label=label,
+                        p=p,
                     )
                     results.append(record)
 

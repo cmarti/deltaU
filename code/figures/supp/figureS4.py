@@ -1,155 +1,248 @@
 from code.plot_utils import (
+    FIG_WIDTH,
     POSITION_LABELS,
+    add_panel_labels,
     apply_plot_style,
-    arrange_axis,
 )
 
-import gpmap.plot.mpl as mplot
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from gpmap.utils import read_edges
-from matplotlib.patches import Patch
+import seaborn as sns
 
 
-def plot_function_hist(ndf, vmin, vmax, nodes_hist_axes, c, cmap="viridis"):
-    bins = np.linspace(vmin, vmax, 30)
-    mplot.plot_color_hist(nodes_hist_axes, ndf[c], cmap=cmap, bins=bins)
-    nodes_hist_axes.set_ylabel("Frequency", fontsize=7)
+def plot_gamma_i_to_j(
+    gamma_i_to_j, position_labels, axes, values="gamma", cmap="Blues_r"
+):
 
+    if values == "gamma":
+        gamma_label = r"$\gamma_{(A_i,B_i) \to (A_j,B_j)}$"
+    elif values == "correlation":
+        gamma_label = r"$\widetilde\gamma_{(A_i,B_i) \to (A_j,B_j)}$"
+    else:
+        raise ValueError(f"Invalid values argument: {values}")
 
-def style_visualization(axes):
-    arrange_axis(
-        axes,
-        x=x,
-        y=y,
-        ticks=np.arange(-2, 4),
-        lims=(-2, 4),
-        fontsize=7,
-        xpos=0.43,
-        ypos=0.43,
-        ms=3,
+    m = pd.pivot_table(
+        gamma_i_to_j, index="mut_i", columns="mut_j", values=values
+    )
+    mutations = [
+        ("A", "G"),
+        ("G", "U"),
+        ("C", "G"),
+        ("A", "C"),
+        ("A", "U"),
+        ("C", "U"),
+    ]
+    idx = []
+    for p in position_labels:
+        for a1, a2 in mutations:
+            idx.append(f"{a1}{p}{a2}")
+    m = m.reindex(index=idx, columns=idx)
+
+    sns.heatmap(
+        m,
+        ax=axes,
+        cmap=cmap,
+        vmin=0,
+        vmax=1,
+        square=True,
+        cbar_kws={"label": gamma_label, "shrink": 0.7},
+        rasterized=True,
     )
     axes.set(
-        xlim=(-2.25, 3.5),
-        ylim=(-2.25, 3.25),
-        aspect="equal",
+        xticks=6 * np.arange(len(position_labels)) + 3,
+        yticks=6 * np.arange(len(position_labels)) + 3,
+        xticklabels=position_labels,
+        yticklabels=position_labels,
+        xlabel="Site $j$",
+        ylabel="Site $i$",
     )
-    axes.margins(0.1)
+    for i in range(8):
+        axes.axhline(i * 6, color="black", lw=0.5)
+        axes.axvline(i * 6, color="black", lw=0.5)
+
+
+def plot_gamma_D_pairs(
+    gamma_UD, position_labels, axes, D, D_label, values="gamma", cmap="Blues_r"
+):
+    if values == "gamma":
+        gamma_label = r"$\gamma_{\{(A_i, B_i),(A_j, B_j)\}}$"
+    elif values == "correlation":
+        gamma_label = r"$\widetilde\gamma_{\{(A_i, B_i),(A_j, B_j)\}}$"
+    else:
+        raise ValueError(f"Invalid values argument: {values}")
+
+    df = gamma_UD.loc[gamma_UD["D"] == D, :]
+    position_labels = [
+        p
+        for p in position_labels
+        if (p in df["site_i"].values or p in df["site_j"].values)
+    ]
+    m = pd.pivot_table(df, index="mut_i", columns="mut_j", values=values)
+    mutations = [
+        ("A", "G"),
+        ("G", "U"),
+        ("C", "G"),
+        ("A", "U"),
+        ("A", "C"),
+        ("C", "U"),
+    ]
+    idx = []
+    for p in position_labels:
+        for a1, a2 in mutations:
+            label = f"{a1}{p}{a2}"
+            idx.append(label)
+
+    m = m.reindex(index=idx, columns=idx).fillna(0)
+    m = m + m.T
+    m[m == 0.0] = np.nan
+
+    D_label = D.replace("-", ",")
+    sns.heatmap(
+        m,
+        ax=axes,
+        cmap=cmap,
+        vmin=0,
+        vmax=1,
+        square=True,
+        cbar_kws={
+            "label": gamma_label + "({" + D_label + "})",
+            "shrink": 0.8,
+        },
+        rasterized=True,
+    )
+    axes.set(
+        xticks=6 * np.arange(len(position_labels)) + 3,
+        yticks=6 * np.arange(len(position_labels)) + 3,
+        xticklabels=position_labels,
+        yticklabels=position_labels,
+        ylabel="Site $i$",
+        xlabel="Site $j$",
+    )
+    for i in range(len(position_labels)):
+        axes.axhline(i * 6, color="black", lw=0.5)
+        axes.axvline(i * 6, color="black", lw=0.5)
 
 
 if __name__ == "__main__":
-    apply_plot_style()
     dataset_name = "intron.30C"
     position_labels = POSITION_LABELS[dataset_name]
-    mf = 1.6
-    x, y, z = "1", "2", "3"
-    print(f"Plotting visualization for {dataset_name} dataset")
+    model_label = "ssVC"
+    apply_plot_style()
 
-    print("  Loading input data")
-    nodes_df = pd.read_parquet(
-        f"results/{dataset_name}.ler.map.mf_{mf}.nodes.pq"
+    print(f"Plotting allele-specific gamma statistics for {model_label} model fit for {dataset_name} dataset")
+
+    ##########################################################################
+
+    print("Loading data for plotting")
+    fpath = f"results/{dataset_name}.{model_label}.gamma_AiBi_to_AjBj.csv"
+    gamma_AiBi_to_AjBj = pd.read_csv(fpath, index_col=0)
+
+    fpath = f"results/{dataset_name}.{model_label}.gamma_AiBiAjBj_D.csv"
+    gamma_AiBiAjBj_D = pd.read_csv(fpath, index_col=0)
+
+    ##########################################################################
+
+    print("Making figure...")
+    fig, subplots = plt.subplots(
+        2, 4, figsize=(1.12 * FIG_WIDTH, FIG_WIDTH * 0.425)
     )
-    nodes_df.index = [x.replace("T", "U") for x in nodes_df.index]
-    edges_df = read_edges(f"results/{dataset_name}.edges.npz")
-    mapping = {"A": 0.1, "C": 0.65, "G": 0.33, "U": 0.9}
-    for pos in range(8):
-        nodes_df[position_labels[pos]] = [
-            mapping[x[pos]] for x in nodes_df.index
-        ]
 
-    print("  Computing background-specific allelic effects")
-    seqs_array = np.array([[c for c in x] for x in nodes_df.index])
-    for position in range(8):
-        alleles = seqs_array.copy()
-        cols = []
-        for allele in "ACGU":
-            alleles[:, position] = allele
-            seqs = np.array(["".join(x) for x in alleles])
-            label = f"{position_labels[position]}{allele}"
-            cols.append(label)
-            nodes_df[label] = nodes_df["function"].reindex(seqs).values
+    print("  Plotting gamma_AiBi_to_AjBj statistics")
+    axes = subplots[0, 0]
+    plot_gamma_i_to_j(gamma_AiBi_to_AjBj, position_labels, axes)
 
-        menas = nodes_df[cols].mean(1).values
-        for col in cols:
-            nodes_df[col] -= menas
+    axes = subplots[1, 0]
+    plot_gamma_i_to_j(
+        gamma_AiBi_to_AjBj,
+        position_labels,
+        axes,
+        values="correlation",
+    )
 
-    print("  Plotting visualization")
+    D = "C21U"
+    print(f"  Plotting predictability of epistatic coefficients for {D} mutation")
+    D_label = r"$(U_{21}, C_{21})$"
+    axes = subplots[0, 1]
+    plot_gamma_D_pairs(
+        gamma_AiBiAjBj_D,
+        position_labels,
+        axes,
+        D=D,
+        D_label=D_label,
+        values="gamma",
+    )
 
-    fig, subplots = plt.subplots(8, 5, figsize=(16, 20))
+    axes = subplots[1, 1]
+    plot_gamma_D_pairs(
+        gamma_AiBiAjBj_D,
+        position_labels,
+        axes,
+        D=D,
+        D_label=D_label,
+        values="correlation",
+    )
 
-    print("    Plotting nodes")
-    cmap = "coolwarm"
-    for p, ax_col in enumerate(subplots):
-        print(f"    Coloring by alleles at position {position_labels[p]}")
-        axes = ax_col[0]
-        mplot.plot_nodes(
-            axes,
-            nodes_df,
-            x=str(x),
-            y=str(y),
-            sort_by=str(z),
-            sort_ascending=False,
-            # sort_by="function",
-            # sort_ascending=True,
-            color=position_labels[p],
-            cmap="magma",
-            vmin=0,
-            vmax=1,
-            size=1.5,
-            cbar=False,
-            rasterized=True,
-        )
-        # Add categorical legend for magma colormap
-        legend_elements = [
-            Patch(facecolor=plt.cm.magma(mapping[allele]), label=allele)
-            for allele in "ACGU"
-        ]
-        axes.legend(handles=legend_elements, loc=4)
-        style_visualization(axes)
+    D = "G21C"
+    print(f"  Plotting predictability of epistatic coefficients for {D} mutation")
+    D_label = r"$(G_{21}, C_{21})$"
+    axes = subplots[0, 2]
+    plot_gamma_D_pairs(
+        gamma_AiBiAjBj_D,
+        position_labels,
+        axes,
+        D=D,
+        D_label=D_label,
+        values="gamma",
+    )
 
-        for allele, axes in zip("ACGU", ax_col[1:]):
-            label = f"{position_labels[p]}{allele}"
-            print(f"      Coloring by {label}")
-            legendx, legendy = -0.05, 0.25
-            nodes_hist_axes = axes.inset_axes(
-                (legendx, legendy - 0.125, 0.25, 0.1)
-            )
-            nodes_cbar_axes = axes.inset_axes(
-                (legendx, legendy - 0.15, 0.25, 0.02)
-            )
+    axes = subplots[1, 2]
+    plot_gamma_D_pairs(
+        gamma_AiBiAjBj_D,
+        position_labels,
+        axes,
+        D=D,
+        D_label=D_label,
+        values="correlation",
+    )
 
-            vmin, vmax = -4, 4
-            mplot.plot_nodes(
-                axes,
-                nodes_df,
-                x=str(x),
-                y=str(y),
-                sort_by=str(z),
-                sort_ascending=False,
-                color=label,
-                size=1.5,
-                vmin=vmin,
-                vmax=vmax,
-                cmap=cmap,
-                cbar_axes=nodes_cbar_axes,
-                cbar_orientation="horizontal",
-                rasterized=True,
-            )
+    D = "C2G-G21C"
+    print(f"  Plotting predictability of epistatic coefficients for {D} mutation")
+    D_label = r"$(C_2,G_2), (G_{21}, C_{21})$"
+    axes = subplots[0, 3]
+    plot_gamma_D_pairs(
+        gamma_AiBiAjBj_D,
+        position_labels,
+        axes,
+        D=D,
+        D_label=D_label,
+        values="gamma",
+    )
 
-            plot_function_hist(
-                nodes_df, vmin, vmax, nodes_hist_axes, c=label, cmap=cmap
-            )
-            nodes_hist_axes.set_facecolor("none")
-            nodes_cbar_axes.set(xticks=[-4, -2, 0, 2, 4])
-            nodes_cbar_axes.set_xticklabels([-4, -2, 0, 2, 4], fontsize=6)
-            cbar_label = f"Allelic effect\n{label}"
-            nodes_cbar_axes.set_xlabel(cbar_label, fontsize=7)
-            style_visualization(axes)
+    axes = subplots[1, 3]
+    plot_gamma_D_pairs(
+        gamma_AiBiAjBj_D,
+        position_labels,
+        axes,
+        D=D,
+        D_label=D_label,
+        values="correlation",
+    )
+
+    sns.despine(top=False, right=False)
 
     print("  Saving figure...")
-    fig.tight_layout()
-    fname = "figures/figureS4"
-    fig.savefig(f"{fname}.png", dpi=300)
-    fig.savefig(f"{fname}.svg", dpi=300)
+    fig.subplots_adjust(
+        wspace=0.5, hspace=0.4, left=0.05, right=0.95, bottom=0.125, top=0.95
+    )
+    add_panel_labels(
+        subplots.flatten(),
+        labels=["A", "B", "C", "D", "E", "F", "G", "H"],
+        x_offset=-0.22,
+        y_offset=1.075,
+    )
+    fname = 'figureS4'
+    fig.savefig(f"figures/{fname}.png", dpi=300)
+    fig.savefig(f"figures/{fname}.svg", dpi=300)
+
     print("Done.")

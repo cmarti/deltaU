@@ -101,16 +101,9 @@ if __name__ == "__main__":
         "results/simulations.ler.inferred_interaction_strength.csv", index_col=0
     )
 
-    pred = pd.read_csv("results/simulations.ler.pred.csv", index_col=0)
     test = pd.read_csv("results/simulations.ler.pred.ler.csv", index_col=0).dropna()
     ler_r2 = pd.read_csv("results/simulations.ler.r2.csv", index_col=0)
-    r2_true_lambdas = pd.read_csv("results/simulations.ler.true_lambdas.r2.csv", index_col=0)
-    r2_true_lambdas['model'] = 'LER-True'
-    ler_r2 = pd.concat([ler_r2, r2_true_lambdas], axis=0)
     ssVC_r2 = pd.read_csv("results/simulations.ssVC.r2.csv", index_col=0)
-    r2_true_lambdas = pd.read_csv("results/simulations.ssVC.true_lambdas.r2.csv", index_col=0)
-    r2_true_lambdas['model'] = 'ssVC-True'
-    ssVC_r2 = pd.concat([ssVC_r2, r2_true_lambdas], axis=0)
 
     print("Making figure...")
     fig, subplots = plt.subplots(

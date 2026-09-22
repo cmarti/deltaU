@@ -71,15 +71,7 @@ if __name__ == "__main__":
         a_values.to_csv(
             f"results/simulations.{model_name}.inferred_interaction_strength.csv"
         )
-
-        print(
-            "  Making predictions for complete landscapes under the inferred prior..."
-        )
-        pred = model.predict()
-        pred.to_csv(
-            f"results/simulations.{model_name}.pred.ler.csv", index=False
-        )
-
+        
         print("  Making predictions for the test set under the inferred prior...")
         np.random.seed(0)
         X_test = np.random.choice(X_test, size=200, replace=False)
@@ -101,20 +93,5 @@ if __name__ == "__main__":
             f"results/simulations.{model_name}.inferred_lambda_U.ssVC.csv",
             index=False,
         )
-
-        print(
-            "  Making predictions for complete landscapes under the inferred prior..."
-        )
-        pred = model.predict()
-        pred.to_csv(
-            f"results/simulations.{model_name}.pred.ssVC.csv", index=False
-        )
-
-        print("  Making predictions for the test set under the inferred prior...")
-        np.random.seed(0)
-        X_test = np.random.choice(X_test, size=200, replace=False)
-        pred = model.predict(X_test, calc_variance=True)
-        test = test.join(pred, rsuffix='pred')
-        test.to_csv(f'results/simulations.{model_name}.pred.ssVC.csv')
 
     print("Done.")

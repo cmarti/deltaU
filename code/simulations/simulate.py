@@ -7,6 +7,7 @@ if __name__ == "__main__":
     np.random.seed(0)
 
     print("Initializing LER model")
+    model_label = "ler"
     model = LocalEpistasisRegression(seq_length=8, alphabet_type="dna", P=2)
     n_Us = len(model.Us)
 
@@ -58,7 +59,7 @@ if __name__ == "__main__":
         .T
     )
     a_matrix = a_matrix + a_matrix.T
-    a_matrix.to_csv("results/simulations.ler.prior_a.csv")
+    a_matrix.to_csv(f"results/simulations.{model_label}.prior_a.csv")
 
     print("  Saving LER prior correlations")
     prior_cov = model.aligner.predict(model.get_params())
@@ -78,11 +79,11 @@ if __name__ == "__main__":
         },
     )
     prior_cor_df.to_csv(
-        "results/simulations.ler.prior_correlations.csv", index=False
+        f"results/simulations.{model_label}.prior_correlations.csv", index=False
     )
 
     lambda_U = pd.DataFrame({"U": sites, "k": d, "lambda_U": model.lambdas})
-    lambda_U.to_csv("results/simulations.ler.lambda_U.csv", index=False)
+    lambda_U.to_csv(f"results/simulations.{model_label}.lambda_U.csv", index=False)
 
     print("  Sampling f from the LER prior")
     K_sqrt = model.K
@@ -96,25 +97,26 @@ if __name__ == "__main__":
     data = pd.DataFrame(
         {"f": f, "y": y, "y_var": y_var}, index=model.genotypes
     )
-    data.to_csv("data/processed/simulations.ler.csv")
+    data.to_csv(f"data/processed/simulations.{model_label}.csv")
 
     #################################################################
 
     print("Initializing ssVC model")
+    model_label = "ssVC"
     model = SitesVCregression(seq_length=8, alphabet_type="dna")
 
     print("  Re-scaling variance components for ssVC prior")
     lambda_k = np.append(np.array([1, 1]), np.geomspace(1, 10, 7))
     k_factor = np.array([lambda_k[k] for k in lambda_U["k"]])
     lambda_U["lambda_U"] = lambda_U["lambda_U"] * k_factor
-    lambda_U.to_csv("results/simulations.ssVC.lambda_U.csv", index=False)
-    
+    lambda_U.to_csv(f"results/simulations.{model_label}.lambda_U.csv", index=False)
+
     print("  Sampling f from the ssVC prior")
     model.set_lambdas(lambda_U["lambda_U"].values)
     K_sqrt = model.K
     K_sqrt.set_lambdas(np.sqrt(model.K.lambdas))
     f = K_sqrt @ np.random.normal(size=K_sqrt.shape[0])
-    f *= f_std / np.std(f) # Re-scaling to match the variance of the LER prior
+    f *= f_std / np.std(f)  # Re-scaling to match the variance of the LER prior
 
     y_sd = np.full_like(f, 0.2)
     y_var = np.square(y_sd)
@@ -122,8 +124,8 @@ if __name__ == "__main__":
     data = pd.DataFrame(
         {"f": f, "y": y, "y_var": y_var}, index=model.genotypes
     )
-    data.to_csv("data/processed/simulations.ssVC.csv")
-    
+    data.to_csv(f"data/processed/simulations.{model_label}.csv")
+
     print("  Saving ssVC prior correlations")
     aligner = SitesVCKernelAligner(n_alleles=4, seq_length=8)
     prior_cov = aligner.predict(model.lambdas)
@@ -138,7 +140,7 @@ if __name__ == "__main__":
         },
     )
     prior_cor_df.to_csv(
-        "results/simulations.ssVC.prior_correlations.csv", index=False
+        f"results/simulations.{model_label}.prior_correlations.csv", index=False
     )
 
     print("Done.")

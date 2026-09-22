@@ -27,18 +27,42 @@ if __name__ == "__main__":
 
     print("  Loading input data")
     nodes_df = pd.read_parquet(
-        f"results/{dataset_name}.ler.map.mf_{mf}.nodes.pq"
+        f"results/{dataset_name}.ssVC.map.mf_{mf}.nodes.pq"
     )
     nodes_df.index = [x.replace("T", "U") for x in nodes_df.index]
     edges_df = read_edges(f"results/{dataset_name}.edges.npz")
 
-    print("  Loading epistatic coefficients")
-    epistatic_coeffs = pd.read_csv(
-        f"results/{dataset_name}.ler.epistatic_coefficients.csv", index_col=0
-    )
-    nodes_df = nodes_df.join(epistatic_coeffs)
-    print(epistatic_coeffs)
-
+    print("  Calculating mutational effects")
+    mutations = {
+        "G2C": (0, 'G', 'C'),
+        "C21G": (7, 'C', 'G'),
+    }
+    seqs = np.array([[c for c in x] for x in nodes_df.index])
+    for mutation, (pos, a1, a2) in mutations.items():
+        s1, s2 = seqs.copy(), seqs.copy()
+        s1[:, pos] = a1
+        s2[:, pos] = a2
+        s1 = np.array(["".join(x) for x in s1])
+        s2 = np.array(["".join(x) for x in s2])
+        nodes_df[mutation] = nodes_df.loc[s2, 'function'].values - nodes_df.loc[s1, 'function'].values
+    
+    print("  Calculating epistatic coefficients")
+    epistatic_coeffs = {
+        "G3C_C20G": (1, 6, 'G', 'C', 'C', 'G'),
+        "A3U_U20A": (1, 6, 'A', 'U', 'U', 'A'),
+    }
+    seqs = np.array([[c for c in x] for x in nodes_df.index])
+    for epistatic_coeff, (i, j, a1_i, a2_i, a1_j, a2_j) in epistatic_coeffs.items():
+        e = np.zeros(nodes_df.shape[0])
+        signs = [1, -1, -1, 1]
+        for sign, (a_i, a_j) in zip(signs, [(a1_i, a1_j), (a1_i, a2_j), (a2_i, a1_j), (a2_i, a2_j)]):
+            s = seqs.copy()
+            s[:, i] = a_i
+            s[:, j] = a_j
+            s = np.array(["".join(x) for x in s])
+            e += sign * nodes_df.loc[s, 'function'].values
+        nodes_df[epistatic_coeff] = e
+    
     print("  Plotting visualization")
     print("    Plotting edges")
     dsg = dplot.plot_edges(
