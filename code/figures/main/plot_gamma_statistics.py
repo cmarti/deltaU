@@ -12,16 +12,16 @@ import seaborn as sns
 
 
 def plot_gamma_i_to_j(
-    gamma_i_to_j, position_labels, axes, values="gamma", cmap="binary_r"
+    gamma_i_to_j, position_labels, axes, values="gamma", cmap="Blues_r"
 ):
-    
+
     if values == "gamma":
         gamma_label = r"$\gamma_{i \to j}$"
     elif values == "correlation":
         gamma_label = r"$\widetilde\gamma_{i \to j}$"
     else:
         raise ValueError(f"Invalid values argument: {values}")
-    
+
     m = pd.pivot_table(
         gamma_i_to_j, index="site_i", columns="site_j", values=values
     )
@@ -44,14 +44,16 @@ def plot_gamma_i_to_j(
     )
 
 
-def plot_gamma_D_pairs(gamma_UD, position_labels, axes, D, values="gamma_UD", cmap="binary_r"):
+def plot_gamma_D_pairs(
+    gamma_UD, position_labels, axes, D, values="gamma_UD", cmap="Blues_r"
+):
     if values == "gamma_UD":
         gamma_label = r"$\gamma_{\{i,j\}}$"
     elif values == "cor_UD":
         gamma_label = r"$\widetilde\gamma_{\{i,j\}}$"
     else:
         raise ValueError(f"Invalid values argument: {values}")
-    
+
     D_label = ",".join([str(i) for i in D])
     S_not_D = [i for i in position_labels if i not in D]
     gamma_U_D = gamma_UD.loc[gamma_UD["D"].astype(str) == D_label, :].copy()
@@ -97,7 +99,7 @@ if __name__ == "__main__":
     print("Loading data for plotting")
     fpath = f"results/{dataset_name}.{model_label}.gamma_i_to_j.csv"
     gamma_i_to_j = pd.read_csv(fpath, index_col=0)
-    
+
     fpath = f"results/{dataset_name}.{model_label}.gamma_i_to_jk.csv"
     gamma_i_to_jk = pd.read_csv(fpath, index_col=0)
     print(gamma_i_to_jk)
@@ -109,7 +111,9 @@ if __name__ == "__main__":
     ##########################################################################
 
     print("Making figure...")
-    fig, subplots = plt.subplots(2, 4, figsize=(1.12 * FIG_WIDTH, FIG_WIDTH * 0.425))
+    fig, subplots = plt.subplots(
+        2, 4, figsize=(1.12 * FIG_WIDTH, FIG_WIDTH * 0.425)
+    )
 
     axes = subplots[0, 0]
     plot_gamma_i_to_j(gamma_i_to_j, position_labels, axes)
@@ -123,30 +127,44 @@ if __name__ == "__main__":
     )
 
     axes = subplots[0, 1]
-    plot_gamma_D_pairs(gamma_i_to_jk, position_labels, axes, D=[5], values="gamma_UD")
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[5], values="gamma_UD"
+    )
 
     axes = subplots[1, 1]
-    plot_gamma_D_pairs(gamma_i_to_jk, position_labels, axes, D=[5], values="cor_UD")
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[5], values="cor_UD"
+    )
 
     axes = subplots[0, 2]
-    plot_gamma_D_pairs(gamma_i_to_jk, position_labels, axes, D=[21], values="gamma_UD")
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[21], values="gamma_UD"
+    )
 
     axes = subplots[1, 2]
-    plot_gamma_D_pairs(gamma_i_to_jk, position_labels, axes, D=[21], values="cor_UD")
+    plot_gamma_D_pairs(
+        gamma_i_to_jk, position_labels, axes, D=[21], values="cor_UD"
+    )
 
     axes = subplots[0, 3]
-    plot_gamma_D_pairs(gamma_UDs, position_labels, axes, D=[2, 21], values="gamma_UD")
-    
+    plot_gamma_D_pairs(
+        gamma_UDs, position_labels, axes, D=[2, 21], values="gamma_UD"
+    )
+
     axes = subplots[1, 3]
-    plot_gamma_D_pairs(gamma_UDs, position_labels, axes, D=[2, 21], values="cor_UD")
+    plot_gamma_D_pairs(
+        gamma_UDs, position_labels, axes, D=[2, 21], values="cor_UD"
+    )
 
     sns.despine(top=False, right=False)
 
     print("  Saving figure...")
-    fig.subplots_adjust(wspace=0.5, hspace=0.4, left=0.05, right=0.95, bottom=0.125, top=0.95)
+    fig.subplots_adjust(
+        wspace=0.5, hspace=0.4, left=0.05, right=0.95, bottom=0.125, top=0.95
+    )
     add_panel_labels(
         subplots.flatten(),
-        labels=["A", "B", "C", "D", "E", "F", 'G', "H"],
+        labels=["A", "B", "C", "D", "E", "F", "G", "H"],
         x_offset=-0.22,
         y_offset=1.075,
     )

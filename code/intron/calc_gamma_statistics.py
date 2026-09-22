@@ -1,9 +1,9 @@
 from code.plot_utils import POSITION_LABELS
+from itertools import combinations
 
 import numpy as np
 import pandas as pd
 from gpmap.summary import GPmapSummarizer
-from itertools import combinations
 
 if __name__ == "__main__":
     dataset_name = "intron.30C"
@@ -19,12 +19,16 @@ if __name__ == "__main__":
 
     print("  Calculating summary statistics")
     s = GPmapSummarizer(n_alleles=4, seq_length=8, f=data["f"].values)
-    
+
     print("    Calculating gamma_i_to_j statistics")
     gamma_i_to_j = s.calc_gamma_i_to_j()
-    gamma_i_to_j["site_i"] = [positions_labels[i] for i in gamma_i_to_j["site_i"]]
-    gamma_i_to_j["site_j"] = [positions_labels[i] for i in gamma_i_to_j["site_j"]]
-    
+    gamma_i_to_j["site_i"] = [
+        positions_labels[i] for i in gamma_i_to_j["site_i"]
+    ]
+    gamma_i_to_j["site_j"] = [
+        positions_labels[i] for i in gamma_i_to_j["site_j"]
+    ]
+
     print("    Calculating gamma_i_to_jk statistics")
     S = list(range(8))
     records = []
@@ -47,16 +51,16 @@ if __name__ == "__main__":
                 }
             )
     gamma_i_to_jk = pd.DataFrame(records)
-    
+
     print("    Calculating gamma_UD statistics for pairs of sites")
     S = list(range(8))
     records = []
     for U in combinations(S, 2):
-        U_label = ','.join([str(positions_labels[i]) for i in U])
+        U_label = ",".join([str(positions_labels[i]) for i in U])
         S_not_U = [i for i in S if i not in U]
         for i, j in combinations(S_not_U, 2):
             D = [i, j]
-            D_label = ','.join([str(positions_labels[i]) for i in D])
+            D_label = ",".join([str(positions_labels[i]) for i in D])
             gamma_UD = s.calc_gamma_U_D(U, D)
             cor_UD = s.calc_correlation_U_D(U, D)
             records.append(
@@ -68,17 +72,17 @@ if __name__ == "__main__":
                 }
             )
     gamma_UDs = pd.DataFrame(records)
-    
+
     print("Saving gamma_i_to_j statistics")
     fpath = f"results/{dataset_name}.{model_label}.gamma_i_to_j.csv"
     gamma_i_to_j.to_csv(fpath)
-    
+
     print("Saving gamma_i_to_jk statistics")
     fpath = f"results/{dataset_name}.{model_label}.gamma_i_to_jk.csv"
     gamma_i_to_jk.to_csv(fpath)
-    
+
     print("Saving gamma_UD statistics for pairs of sites")
     fpath = f"results/{dataset_name}.{model_label}.gamma_UD_pairs.csv"
     gamma_UDs.to_csv(fpath)
-    
+
     print("Done.")
